@@ -1,0 +1,10 @@
+unames = {1: 'x', 2: 'y'}
+parnames = {1:'k', 2: 'r', 3: 'a', 4: 'b', 5: 'e', 6: 'd'}
+NDIM=   2, IPS =   1, IRS =   0, ILP =   1
+ICP =  ['k']
+NTST=  15, NCOL=   4, IAD =   3, ISP =   1, ISW = 1, IPLT= 0, NBC= 0, NINT= 0
+NMX=  50000, NPR=  500, MXBF=  -1, IID =   2, ITMX= 8, ITNW= 5, NWTN= 3, JAC= 0
+EPSL= 1e-07, EPSU = 1e-07, EPSS = 1e-05
+DS  =   1e-05, DSMIN=  1e-06, DSMAX= 1e-04, IADS=   1
+NPAR = 20, THL =  {}, THU =  {}
+

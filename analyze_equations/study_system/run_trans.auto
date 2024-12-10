@@ -1,0 +1,49 @@
+#==============
+# Run AUTO on generated model
+#==============
+
+
+# Import packages
+import numpy as np
+
+print('Running AUTO')
+
+# Import parameter data as an array
+pars_list = [0, 4, 1.7, 0.15, 0.5, 2]
+pars_array = np.array(pars_list)
+
+# Put into dictionary form for AUTO
+p = dict(zip([1,2,3,4,5,6], pars_array))
+    
+u = np.array([1.7,0])
+print "Equilibrium is ", u[0], u[1]
+
+par = 'a'
+print('\nBifurcation continuation with parameter '+par)
+
+# Load xxx.f90 and c.xxx files into AUTO
+model = load('trans')
+
+# Load equi and pars into AUTO
+model = load(u, PAR=p, ICP=par)
+
+# Run and store results in Python variable out
+out = run(model)
+
+# Save out to bifurcation files b.out, s.out and d.out
+save(out,'out_trans')
+    
+# Remove s.out and d.out (! uses bash in an AUTO file)
+!rm s.out*
+!rm d.out*
+    
+# Move b.out to director output_auto
+!mv b.out* output_auto
+
+# Clean the directory
+print "Clean the directory"
+clean()
+        
+# Make space
+print("\nEnd AUTO\n\n")
+            

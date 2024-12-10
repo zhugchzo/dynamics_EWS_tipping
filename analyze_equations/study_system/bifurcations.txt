@@ -1,0 +1,3 @@
+fold : h=2.36724
+sup_hopf : k=2.6
+trans : a=5.88
