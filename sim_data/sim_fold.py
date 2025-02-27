@@ -109,7 +109,7 @@ else:
     print('Cant find rrate = 0')
 
 # Store series data in a temporary DataFrame
-data = {'traj_x': x,'equix':equi,'b':b,'rrate': rrate}
+data = {'t':t,'traj_x': x,'equix':equi,'b':b,'rrate': rrate}
 df_temp = pd.DataFrame(data)
 
 df_temp_c1 = df_temp.iloc[c1].copy()
@@ -117,6 +117,9 @@ df_temp_c2 = df_temp.iloc[c2].copy()
 
 df_temp_c1['Time'] = range(len(df_temp_c1))
 df_temp_c2['Time'] = range(len(df_temp_c2))
+
+df_temp_c1['t_diff'] = df_temp_c1['t'].diff()
+df_temp_c2['t_diff'] = df_temp_c2['t'].diff()
 
 cols = ['Time'] + [col for col in df_temp_c1.columns if col != 'Time']
 

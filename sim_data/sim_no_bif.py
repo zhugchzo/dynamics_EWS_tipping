@@ -41,9 +41,9 @@ s = 1 # half-saturation constant of harvesting function
 
 bl = 1
 bh = 3 # bifurcation parameter high
-c_rate = 1.5e-5 # bifurcation parameter change rate
+c_rate = 6e-5 # bifurcation parameter change rate
 
-np.random.seed(17)
+np.random.seed(15)
 
 sim_len = int((bh-bl)*dt/c_rate)
 series_len = 1000
@@ -93,12 +93,14 @@ c1 = np.linspace(0,len(t)-1,series_len)
 c1 = list(map(int,c1))
 
 # Store series data in a temporary DataFrame
-data = {'traj_x': x,'equix':equi,'b':b,'rrate': rrate}
+data = {'t':t,'traj_x': x,'equix':equi,'b':b,'rrate': rrate}
 df_temp = pd.DataFrame(data)
 
 df_temp_c1 = df_temp.iloc[c1].copy()
 
 df_temp_c1['Time'] = range(len(df_temp_c1))
+
+df_temp_c1['t_diff'] = df_temp_c1['t'].diff()
 
 cols = ['Time'] + [col for col in df_temp_c1.columns if col != 'Time']
 

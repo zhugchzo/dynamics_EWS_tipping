@@ -126,9 +126,9 @@ cl = 0
 ah = 0.3
 ch = 0.9
 
-c_rate = 1.3e-5
+c_rate = 1.5e-5
 
-np.random.seed(80)
+np.random.seed(1)
 
 sim_len = int((ch-cl)*dt/c_rate)
 series_len = 1000
@@ -216,7 +216,7 @@ for i in range(len(t)-1):
     if rrate[i] < 0 and rrate[i+1] > 0:
         rrate_record.append(i+1)
 
-    if a.iloc[i] < 0.411786:
+    if a.iloc[i] < 0.39:
         length = i
         break
 
@@ -240,7 +240,7 @@ else:
     print('Cant find rrate = 0')
 
 # Store series data in a temporary DataFrame
-data = {'traj_x': x, 'traj_y': y,'equix': equix, 'equiy': equiy, 'a': a, 'c': c, 'real_eval1': rrate, 'imag_eval1': imag_dom_eval, 'real_eval2': real_oth_eval, 'imag_eval2': imag_oth_eval}
+data = {'t':t,'traj_x': x, 'traj_y': y,'equix': equix, 'equiy': equiy, 'a': a, 'c': c, 'real_eval1': rrate, 'imag_eval1': imag_dom_eval, 'real_eval2': real_oth_eval, 'imag_eval2': imag_oth_eval}
 df_temp = pd.DataFrame(data)
 
 df_temp_c1 = df_temp.iloc[c1].copy()
@@ -248,6 +248,9 @@ df_temp_c2 = df_temp.iloc[c2].copy()
 
 df_temp_c1['Time'] = range(len(df_temp_c1))
 df_temp_c2['Time'] = range(len(df_temp_c2))
+
+df_temp_c1['t_diff'] = df_temp_c1['t'].diff()
+df_temp_c2['t_diff'] = df_temp_c2['t'].diff()
 
 cols = ['Time'] + [col for col in df_temp_c1.columns if col != 'Time']
 

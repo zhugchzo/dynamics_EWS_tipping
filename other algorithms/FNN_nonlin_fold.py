@@ -6,15 +6,6 @@ from sklearn.model_selection import train_test_split
 from sympy import symbols, diff
 import random
 
-# Get the absolute path of the current file
-current_file_path = os.path.abspath(__file__)
-
-# Get the directory containing the current file
-current_dir = os.path.dirname(current_file_path)
-
-# Change the working directory to the directory of the current file
-os.chdir(current_dir)
-
 if not os.path.exists('../results/fold'):
     os.makedirs('../results/fold')
 
@@ -37,7 +28,7 @@ dnonlin = dnonlin_2 + dnonlin_3
 dtot = dlin + dnonlin
 
 df_tseries = pd.read_csv('../data/fold/fold_train.csv')
-keep_col_tseries = ['traj_x','b','Time','rrate']
+keep_col_tseries = ['traj_x','b','Time','rrate','t_diff']
 new_f_tseries = df_tseries[keep_col_tseries]
 values_tseries = new_f_tseries.values
 
@@ -45,6 +36,8 @@ x_tseries = np.array(values_tseries[:,0])
 b_tseries = np.array(values_tseries[:,1])
 tseries = np.array(values_tseries[:,2])
 rrate_tseries = np.array(values_tseries[:,3])
+
+dt = values_tseries[1,-1]
 
 def diff_f(coefficient, x_t, b_t):
 
@@ -136,7 +129,7 @@ for winstart in range(test_length):
     out_train_t = out_train[:,-1]
 
     x_train = out_train[:,:].T
-    y_train = (xb[0:d, winstart + 1:winstart + train_length + 1] - xb[0:d, winstart:winstart + train_length]).T
+    y_train = (xb[0:d, winstart + 1:winstart + train_length + 1] - xb[0:d, winstart:winstart + train_length]).T/dt
 
     model.set_weights(initial_weights)
 
@@ -148,7 +141,7 @@ for winstart in range(test_length):
     
     delta_x = model.predict(x_input)[0][0]
 
-    next_x = xb[0:d,winstart + train_length - 1] + delta_x
+    next_x = xb[0:d,winstart + train_length - 1] + delta_x*dt
 
     predict_traj_x.append(next_x[0])
 

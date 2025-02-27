@@ -2,15 +2,6 @@ import pandas as pd
 import os
 import re
 
-# Get the absolute path of the current file
-current_file_path = os.path.abspath(__file__)
-
-# Get the directory containing the current file
-current_dir = os.path.dirname(current_file_path)
-
-# Change the working directory to the directory of the current file
-os.chdir(current_dir)
-
 # Function to convert b.out files into readable form
 from convert_bifdata import convert_bifdata 
 #convert_bifdata函数将AUTO跑一个分岔参数的模型转化为python的字典
@@ -37,14 +28,17 @@ numbers.sort()
 
 df = pd.read_csv('../../results/fold/fold.csv')
 
-bif_pars_col = ['b_param']
-bif_pars = df[bif_pars_col].values
+bif_pars = df['b_param'].values
+
+initial_theta = df['initial_theta'].values
+delta_theta = df['delta_theta'].values
+end_theta = initial_theta + 499*delta_theta
 
 for ii in numbers:
 
     out = convert_bifdata(f'output_auto/b.out_{ii}')
     bif_type = out['type']
-    bif_value = (out['value']-4.99)*0.6985/4.99 + bif_pars[ii][0]
+    bif_value = (out['value'] - end_theta[ii])*0.6985 / (end_theta[ii] - initial_theta[ii]) + bif_pars[ii]
 
     bif_type_list.append(bif_type)
     bif_value_list.append(bif_value)

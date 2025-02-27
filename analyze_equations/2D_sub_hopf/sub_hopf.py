@@ -3,15 +3,6 @@ import pandas as pd
 import scipy.integrate as spi
 import os
 
-# Get the absolute path of the current file
-current_file_path = os.path.abspath(__file__)
-
-# Get the directory containing the current file
-current_dir = os.path.dirname(current_file_path)
-
-# Change the working directory to the directory of the current file
-os.chdir(current_dir)
-
 # Make folders for this directory
 if not os.path.exists('output_sub_hopf'):
     os.makedirs('output_sub_hopf')
@@ -20,13 +11,18 @@ df = pd.read_csv('../../results/sub_hopf/sub_hopf.csv')
 
 bif_pars_col = ['c']
 states_col = ['equi_x','equi_y']
-f1_elements = ['cte_f1', 'x_f1', 'y_f1', 'b_f1', 'x^2_f1', 'xy_f1', 'bx_f1', 'y^2_f1', 'by_f1', 'b^2_f1', 'x^3_f1', 'x^2y_f1', 'bx^2_f1', 'xy^2_f1', 'bxy_f1', 'b^2x_f1', 'y^3_f1', 'by^2_f1', 'b^2y_f1', 'b^3_f1']
-f2_elements = ['cte_f2', 'x_f2', 'y_f2', 'b_f2', 'x^2_f2', 'xy_f2', 'bx_f2', 'y^2_f2', 'by_f2', 'b^2_f2', 'x^3_f2', 'x^2y_f2', 'bx^2_f2', 'xy^2_f2', 'bxy_f2', 'b^2x_f2', 'y^3_f2', 'by^2_f2', 'b^2y_f2', 'b^3_f2']
+f1_elements = ['cte_f1', 'x_f1', 'y_f1', 'b_f1', 'x^2_f1', 'xy_f1', 'bx_f1', 'y^2_f1', 'by_f1', 'x^3_f1', 'x^2y_f1', 'bx^2_f1', 'xy^2_f1', 'bxy_f1', 'y^3_f1', 'by^2_f1']
+f2_elements = ['cte_f2', 'x_f2', 'y_f2', 'b_f2', 'x^2_f2', 'xy_f2', 'bx_f2', 'y^2_f2', 'by_f2', 'x^3_f2', 'x^2y_f2', 'bx^2_f2', 'xy^2_f2', 'bxy_f2', 'y^3_f2', 'by^2_f2']
 
 bif_pars = df[bif_pars_col].values
 states = df[states_col].values
 f1_coef = df[f1_elements].values
 f2_coef = df[f2_elements].values
+
+initial_theta = df['initial_theta'].values
+delta_theta = df['delta_theta'].values
+
+end_theta = initial_theta + 499*delta_theta
 
 def f(s,t,b,f1,f2):
 
@@ -34,7 +30,7 @@ def f(s,t,b,f1,f2):
     y = s[1]
     b = b[0]
 
-    polys = np.array([1, x, y, b, x**2, x*y, b*x, y**2, b*y, b**2, x**3, x**2*y, b*x**2, x*y**2, b*x*y, b**2*x, y**3, b*y**2, b**2*y, b**3])
+    polys = np.array([1, x, y, b, x**2, x*y, b*x, y**2, b*y, x**3, x**2*y, b*x**2, x*y**2, b*x*y, y**3, b*y**2])
 
     dydt = np.array([np.dot(f1,polys), np.dot(f2,polys)])
     
@@ -43,7 +39,7 @@ def f(s,t,b,f1,f2):
 for i in range(len(bif_pars)):
 
     s0 = states[i]
-    b0 = np.array([4.99])
+    b0 = np.array([end_theta[i]])
     f1 = f1_coef[i]
     f2 = f2_coef[i]
 

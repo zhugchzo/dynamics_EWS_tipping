@@ -3,15 +3,6 @@ import pandas as pd
 import scipy.integrate as spi
 import os
 
-# Get the absolute path of the current file
-current_file_path = os.path.abspath(__file__)
-
-# Get the directory containing the current file
-current_dir = os.path.dirname(current_file_path)
-
-# Change the working directory to the directory of the current file
-os.chdir(current_dir)
-
 # Make folders for this directory
 if not os.path.exists('output_fold'):
     os.makedirs('output_fold')
@@ -25,6 +16,11 @@ f_elements = ['cte', 'x', 'b', 'x^2', 'bx', 'x^3', 'bx^2']
 bif_pars = df[bif_pars_col].values
 states = df[states_col].values
 f_coef = df[f_elements].values
+
+initial_theta = df['initial_theta'].values
+delta_theta = df['delta_theta'].values
+
+end_theta = initial_theta + 499*delta_theta
 
 def f(s,t,b,f0):
 
@@ -40,7 +36,7 @@ def f(s,t,b,f0):
 for i in range(len(bif_pars)):
 
     s0 = states[i]
-    b0 = np.array([4.99])
+    b0 = np.array([end_theta[i]])
     f0 = f_coef[i]
 
     ## Simulate the system

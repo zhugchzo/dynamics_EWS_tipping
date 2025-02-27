@@ -35,7 +35,7 @@ for ii in numbers:
     pars_array = np.array(pars_list)
 
     # Put into dictionary form for AUTO - note par(11) is reserved
-    p = dict(zip(np.concatenate((np.arange(1,11), np.arange(12,43))), pars_array))
+    p = dict(zip(np.concatenate((np.arange(1,11), np.arange(12,35))), pars_array))
 
     # Import equilibrium data as an array
     with open(f'output_sub_hopf/equi_{ii}.csv', 'r') as csvfile:

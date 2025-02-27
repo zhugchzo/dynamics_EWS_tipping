@@ -5,15 +5,6 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 import random
 
-# Get the absolute path of the current file
-current_file_path = os.path.abspath(__file__)
-
-# Get the directory containing the current file
-current_dir = os.path.dirname(current_file_path)
-
-# Change the working directory to the directory of the current file
-os.chdir(current_dir)
-
 if not os.path.exists('../results/fold'):
     os.makedirs('../results/fold')
 
@@ -23,13 +14,15 @@ train_length = 500 # Length of the rolling window
 test_length = length - train_length
 
 df_tseries = pd.read_csv('../data/fold/fold_train.csv')
-keep_col_tseries = ['traj_x','b','Time','rrate']
+keep_col_tseries = ['traj_x','b','Time','rrate','t_diff']
 new_f_tseries = df_tseries[keep_col_tseries]
 values_tseries = new_f_tseries.values
 
 xb_tseries = np.array(values_tseries[:,:2])
 tseries = np.array(values_tseries[:,2])
 rrate_tseries = np.array(values_tseries[:,3])
+
+dt = values_tseries[1,-1]
 
 rand_seed = 25
 
@@ -60,7 +53,7 @@ i = 0 # count
 for winstart in range(test_length):
 
     x_train = xb_tseries[winstart : winstart + train_length]
-    y_train = xb_tseries[winstart+1 : winstart + train_length+1][:,0] - xb_tseries[winstart : winstart + train_length][:,0]
+    y_train = (xb_tseries[winstart+1 : winstart + train_length+1][:,0] - xb_tseries[winstart : winstart + train_length][:,0])/dt
 
     model.set_weights(initial_weights)
 
@@ -72,7 +65,7 @@ for winstart in range(test_length):
     
     delta_x = model.predict(x_input)[0][0]
 
-    next_x = x_train[-1][0] + delta_x
+    next_x = x_train[-1][0] + delta_x*dt
 
     predict_traj_x.append(next_x)
 
