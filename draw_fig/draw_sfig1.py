@@ -41,14 +41,14 @@ x = df['traj_x']
 real = df_results['real_eval']
 imag = df_results['imag_eval']
 
-theta_x = df_results['pred_x']
+nu_x = df_results['pred_x']
 ac_x = df_ac_results['pred_x']
 nop_x = df_nop_results['pred_x']
 
-theta_real = df_results['esti_real_eval1']
-theta_imag1 = df_results['esti_imag_eval1']
-theta_imag2 = df_results['esti_imag_eval2']
-theta_stbexpnt = df_stable['stable_expnt']
+nu_real = df_results['esti_real_eval1']
+nu_imag1 = df_results['esti_imag_eval1']
+nu_imag2 = df_results['esti_imag_eval2']
+nu_stbexpnt = df_stable['stable_expnt']
 
 ac_real = df_ac_results['esti_real_eval1']
 ac_imag1 = df_ac_results['esti_imag_eval1']
@@ -72,7 +72,7 @@ subplt = ax1
 
 subplt.scatter(t1[::5],x[::5],s=25,c='darkslateblue',marker='o')
 subplt.plot(t1[::5],x[::5],c='darkslateblue')
-subplt.scatter(t2[::5]+1,theta_x[::5],s=100, marker='o',facecolors='none',edgecolors='crimson')
+subplt.scatter(t2[::5]+1,nu_x[::5],s=100, marker='o',facecolors='none',edgecolors='crimson')
 subplt.scatter(1000,x[1000],s=500, marker='o',facecolors='white', edgecolors='black',zorder=5)
 subplt.set_xlim(-62,1265)
 subplt.set_ylim(0.2,8)
@@ -100,14 +100,14 @@ arrow2 = FancyArrowPatch((440, 2.3), (490, 2.3),
                         linewidth=2,
                         mutation_scale=15)
 subplt.add_patch(arrow2)
-subplt.text(900, 0.8, r'using $\theta$ for estimating', fontsize=25, ha='center', va='center', color='black')
+subplt.text(900, 0.8, r'using $\nu$ for estimating', fontsize=25, ha='center', va='center', color='black')
 
 legend_state = mlines.Line2D([], [], color='darkslateblue', marker='o', markersize=5, linestyle='-', markeredgewidth=1)
 legend_pstate = mlines.Line2D([], [], markerfacecolor='none',color='crimson', marker='o', markersize=10, linestyle='None', markeredgewidth=3)
 
 ax_inset = fig.add_axes([0.165, 0.775, 0.14, 0.2]) 
 
-ax_inset.scatter(t3, theta_stbexpnt, color='crimson', marker='x',zorder=6,s=75)
+ax_inset.scatter(t3, nu_stbexpnt, color='crimson', marker='x',zorder=6,s=75)
 ax_inset.axhline(y=0, color='black', linestyle='--')
 ax_inset.set_xlabel('Timepoint',font_in_x1,labelpad=-10)
 ax_inset.set_xticks([971,1000])
@@ -124,7 +124,7 @@ subplt.legend(handles=[legend_state,legend_pstate],labels=['state','predicted st
 subplt = ax2
 
 subplt.scatter(t2,real,s=20,c='darkslateblue',marker='^')
-subplt.scatter(t2[df_results['esti_real_eval1'].between(-0.39, 0.02)],theta_real[df_results['esti_real_eval1'].between(-0.39, 0.02)],s=20,c='crimson',marker='^')
+subplt.scatter(t2[df_results['esti_real_eval1'].between(-0.39, 0.02)],nu_real[df_results['esti_real_eval1'].between(-0.39, 0.02)],s=20,c='crimson',marker='^')
 subplt.scatter(1000,real[499],s=500,marker='^',facecolors='white', edgecolors='black')
 subplt.text(650,0,'reach zero',size=36)
 subplt.set_xlabel('Timepoint',font_x,labelpad=-20)
@@ -139,8 +139,8 @@ subplt.set_yticklabels(['-0.4','0'])
 
 ax_inset = fig.add_axes([0.033, 0.17, 0.105, 0.22]) 
 
-ax_inset.scatter(t2[::5],theta_imag1[::5], s=80, marker='^',facecolors='none',edgecolors='crimson',zorder=2)
-ax_inset.scatter(t2[::5],theta_imag2[::5], s=80, marker='^',facecolors='none',edgecolors='crimson',zorder=2)
+ax_inset.scatter(t2[::5],nu_imag1[::5], s=80, marker='^',facecolors='none',edgecolors='crimson',zorder=2)
+ax_inset.scatter(t2[::5],nu_imag2[::5], s=80, marker='^',facecolors='none',edgecolors='crimson',zorder=2)
 ax_inset.scatter(t2,imag,s=20, marker='^',c='darkslateblue',label = 'ground truth',zorder=1)
 ax_inset.scatter(t2,-imag,s=20, marker='^',c='darkslateblue',label = 'ground truth',zorder=1)
 ax_inset.axhline(y=0, color='black', linestyle='--')
@@ -314,7 +314,7 @@ ax_inset.yaxis.tick_right()
 ax_inset.set_ylim(-0.1,0.06)
 legend_index = mlines.Line2D([], [], color='crimson', marker='x', linestyle='None',markeredgewidth=2)
 legend_nan = mlines.Line2D([], [], color='darkorange', marker='x', linestyle='None',markeredgewidth=2)
-ax_inset.legend(handles=[legend_index,legend_nan],labels=['estimated stability index','Nan'],fontsize=28,loc='center', bbox_to_anchor=(0.5,0.15), frameon=False,handletextpad=-0.1,markerscale=3)
+ax_inset.legend(handles=[legend_index,legend_nan],labels=['estimated stability index','NaN'],fontsize=28,loc='center', bbox_to_anchor=(0.5,0.15), frameon=False,handletextpad=-0.1,markerscale=3)
 
 subplt.legend(handles=[legend_state,legend_pstate],labels=['state','predicted state'],loc='upper center', frameon=False, bbox_to_anchor=(0.23, 0.8), handletextpad=0.2,markerscale=2.5,prop={'size':32})
 

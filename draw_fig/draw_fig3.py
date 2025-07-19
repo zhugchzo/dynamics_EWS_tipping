@@ -121,7 +121,7 @@ ax_inset.set_ylim(-0.23,0.046)
 legend_index = mlines.Line2D([], [], color='crimson', marker='x', linestyle='None',markeredgewidth=2)
 ax_inset.legend(handles=[legend_index],labels=['estimated stability index'],fontsize=30,loc='center', bbox_to_anchor=(0.5,0.91), frameon=False,handletextpad=-0.1,markerscale=3)
 
-subplt.legend(handles=[legend_state,legend_pstate],labels=['state','predicted state'],loc='upper center', frameon=False, bbox_to_anchor=(0.22, 0.8), handletextpad=0.2,markerscale=2.5,prop={'size':32})
+subplt.legend(handles=[legend_state,legend_pstate],labels=['state (N)','predicted state'],loc='upper center', frameon=False, bbox_to_anchor=(0.22, 0.8), handletextpad=0.2,markerscale=2.5,prop={'size':32})
 
 subplt = ax2
 
@@ -205,7 +205,7 @@ subplt.add_patch(arrow2)
 legend_state = mlines.Line2D([], [], color='darkslateblue', marker='o', markersize=5, linestyle='-', markeredgewidth=1)
 legend_pstate = mlines.Line2D([], [], markerfacecolor='none',color='crimson', marker='o', markersize=10, linestyle='None', markeredgewidth=3)
 
-subplt.legend(handles=[legend_state,legend_pstate],labels=['state','predicted state'],loc='upper center', frameon=False, bbox_to_anchor=(0.75, 0.8), handletextpad=0.2,markerscale=2.5,prop={'size':32})
+subplt.legend(handles=[legend_state,legend_pstate],labels=['state (N)','predicted state'],loc='upper center', frameon=False, bbox_to_anchor=(0.75, 0.8), handletextpad=0.2,markerscale=2.5,prop={'size':32})
 
 subplt = ax4
 
@@ -293,7 +293,7 @@ ax_inset.legend(handles=[legend_index],labels=['estimated stability index'],font
 legend_state = mlines.Line2D([], [], color='darkslateblue', marker='o', markersize=5, linestyle='-', markeredgewidth=1)
 legend_pstate = mlines.Line2D([], [], markerfacecolor='none',color='crimson', marker='o', markersize=10, linestyle='None', markeredgewidth=3)
 
-subplt.legend(handles=[legend_state,legend_pstate],labels=['state','predicted state'],loc='upper center', frameon=False, bbox_to_anchor=(0.23, 0.8), handletextpad=0.2,markerscale=2.5,prop={'size':32})
+subplt.legend(handles=[legend_state,legend_pstate],labels=['state (X)','predicted state'],loc='upper center', frameon=False, bbox_to_anchor=(0.23, 0.8), handletextpad=0.2,markerscale=2.5,prop={'size':32})
 
 subplt = ax6
 

@@ -67,7 +67,7 @@ subplt.add_patch(arrow2)
 legend_state = mlines.Line2D([], [], color='darkslateblue', marker='o', markersize=5, linestyle='-', markeredgewidth=1)
 legend_pstate = mlines.Line2D([], [], markerfacecolor='none',color='crimson', marker='o', markersize=10, linestyle='None', markeredgewidth=3)
 
-subplt.legend(handles=[legend_state,legend_pstate],labels=['state','predicted state'],loc='lower center', frameon=False, bbox_to_anchor=(0.7, 0.05), handletextpad=0.2, markerscale=2.5,prop={'size':36})
+subplt.legend(handles=[legend_state,legend_pstate],labels=['mean state','mean predicted\n     state'],loc='lower center', frameon=False, bbox_to_anchor=(0.7, 0.05), handletextpad=0.2, markerscale=2.5,prop={'size':36})
 
 subplt = ax2
 

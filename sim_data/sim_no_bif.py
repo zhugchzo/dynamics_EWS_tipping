@@ -3,15 +3,6 @@ import numpy as np
 import pandas as pd
 import os
 
-# Get the absolute path of the current file
-current_file_path = os.path.abspath(__file__)
-
-# Get the directory containing the current file
-current_dir = os.path.dirname(current_file_path)
-
-# Change the working directory to the directory of the current file
-os.chdir(current_dir)
-
 if not os.path.exists('../data/no_bif'):
     os.makedirs('../data/no_bif')
 

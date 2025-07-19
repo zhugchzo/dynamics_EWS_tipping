@@ -1,106 +1,95 @@
-import numpy as np
 import pandas
 import matplotlib.pyplot as plt
+from matplotlib.patches import FancyArrowPatch
+import matplotlib.lines as mlines
 
 font_x = {'family':'Arial','weight':'normal','size': 40}
-font_y = {'family':'Arial','weight':'normal','size': 40}
+font_y1 = {'family':'Arial','weight':'normal','size': 30}
+font_y2 = {'family':'Arial','weight':'normal','size': 40}
 
 plt.rcParams['font.family'] = 'Arial'
 plt.rcParams['axes.labelweight'] = 'bold'
-plt.rcParams['xtick.labelsize'] = 26
-plt.rcParams['ytick.labelsize'] = 26
+plt.rcParams['xtick.labelsize'] = 36
+plt.rcParams['ytick.labelsize'] = 36
 
-fig, axs = plt.subplots(2, 1, figsize=(12,13))
+fig, axs = plt.subplots(2, 1, figsize=(12,15))
 
 (ax1, ax2) = axs.flatten()
 
-df_fold = pandas.read_csv('../results/fold/auto_output.csv')
-df_hopf = pandas.read_csv('../results/sub_hopf/auto_output.csv')
-df_time = pandas.read_csv('../results/fold/fold.csv')
+df_fold = pandas.read_csv('../data/microcosm/microcosm.csv')
+df_results = pandas.read_csv('../results/microcosm/microcosm.csv')
 
-t = df_time['Time'] + 1
 t1 = df_fold['Time']
-t2 = df_hopf['Time']
+t2 = df_results['Time']
 
-###################################################
+x = df_fold['light attenuation coefficient']
+pred_x = df_results['pred_x']
 
-fold_fold = df_fold[df_fold['bif_type'] == 'LP']
-fold_NA = df_fold[df_fold['bif_type'].isna()]
-
-t_fold_fold = fold_fold['Time']
-bif_fold_fold = fold_fold['bif_value']
-
-t_fold_NA = fold_NA['Time']
-bif_fold_NA = np.zeros(len(t_fold_NA))+2.1
-
-t_fold_blow = t[~t.isin(t1)]
-bif_fold_blow = np.zeros(len(t_fold_blow))+2.1
-
-###################################################
-
-hopf_hopf = df_hopf[df_hopf['bif_type'] == 'HB']
-hopf_fold = df_hopf[df_hopf['bif_type'] == 'LP']
-hopf_NA = df_hopf[df_hopf['bif_type'].isna()]
-
-t_hopf_hopf = hopf_hopf['Time']
-bif_hopf_hopf = 1.2 - hopf_hopf['bif_value']
-
-t_hopf_fold = hopf_fold['Time']
-bif_hopf_fold = 1.2 - hopf_fold['bif_value']
-
-t_hopf_NA = hopf_NA['Time']
-bif_hopf_NA = np.zeros(len(t_hopf_NA))
-
-t_hopf_blow = t[~t.isin(t2)]
-bif_hopf_blow = np.zeros(len(t_hopf_blow))
-
-fold_bif = 2.37
-hopf_bif = 0.55  # a = 0.55, c = 0.65
+rrate = df_results['esti_rrate']
 
 subplt = ax1
 
-legend_fold_fold = subplt.scatter(t_fold_fold,bif_fold_fold,s=100,marker=r'$\checkmark$',c='crimson',zorder=5)
-legend_fold_NA = subplt.scatter(t_fold_NA,bif_fold_NA,s=80,marker=r'$\times$',c='grey',zorder=5)
-legend_fold_blow = subplt.scatter(t_fold_blow,bif_fold_blow,s=80,marker='^',c='forestgreen',zorder=5)
-subplt.text(-0.1, 0.95,'a',ha='left', transform=subplt.transAxes,fontdict={'family':'DejaVu Sans','size':50,'weight':'bold'})
-subplt.set_ylim(2,3)
-subplt.set_xticks([500,1000])
-subplt.set_yticks([fold_bif,2.6,2.9])
-subplt.axhline(y=2.1, color='black', linestyle=':', linewidth=2)
-subplt.axhline(y=fold_bif, color='crimson', linestyle='--', linewidth=2)
-subplt.text(1030,fold_bif,'fold', fontsize=28, ha='left', va='center', color='black')
-subplt.text(750,2.05,'divergence or no bifurcation', fontsize=24, ha='left', va='center', color='black')
-subplt.tick_params(axis='x', labelbottom=False)
-subplt.set_yticklabels(['2.37','2.6','2.9'])
+subplt.scatter(t1[::5],x[::5],s=25,c='darkslateblue',marker='o')
+subplt.plot(t1[::5],x[::5],c='darkslateblue')
+subplt.scatter(t2[1::5],pred_x[::5],s=100, marker='o',facecolors='none',edgecolors='crimson')
+subplt.scatter(t1[1209],x[1209],s=500, marker='o',facecolors='white', edgecolors='black',zorder=5)
+subplt.set_ylabel('Light attenuation coefficient (m$^{-1}$)',font_y1,labelpad=10)
+subplt.set_xlim(22,29)
+subplt.set_xticks([22.4,24.2,28])
+subplt.set_xticklabels(['22.4','24.2','28'])
+subplt.set_ylim(90,155)
+subplt.set_yticks([100,140])
+subplt.set_yticklabels(['100','140'])
+subplt.text(t1[1209]+0.2,x[1209]+3,'fold',size=48)
+subplt.text(-0.075, 0.96,'a',ha='left', transform=subplt.transAxes,fontdict={'family':'DejaVu Sans','size':50,'weight':'bold'})
+subplt.axvline(x=t1[0], color='black', linestyle='--', linewidth=2)
+subplt.axvline(x=t1[500], color='black', linestyle='--', linewidth=2)
 
-subplt.set_title('Insect outbreak system (codim-1 fold)', fontsize=40, fontweight='normal', fontfamily='Arial', y=1.03)
-subplt.legend(handles=[legend_fold_fold,legend_fold_NA,legend_fold_blow],labels=['fold','no bifurcation','divergence'],loc='center left', bbox_to_anchor=(0.6, 0.8), markerscale=2,prop={'size':24})
+subplt.text(26.3,149,'dilution event', fontsize=24, ha='center', va='center', color='black')
+arrow1 = FancyArrowPatch((26, 147), (25.5, 143), 
+                        arrowstyle='-|>', 
+                        color='black',
+                        linewidth=2,
+                        mutation_scale=25)
+subplt.add_patch(arrow1)
+
+subplt.plot([t1[15], t1[484]], [100, 100], linestyle='--', color='black', linewidth=2)
+arrow2 = FancyArrowPatch((t1[5], 100), (t1[494], 100), 
+                        arrowstyle='<|-|>', 
+                        color='black',
+                        linewidth = 0, 
+                        mutation_scale=25)
+subplt.add_patch(arrow2)
+
+subplt.text(t1[240],105,'sliding window', fontsize=24, ha='center', va='center', color='black')
+arrow3 = FancyArrowPatch((t1[190], 102.5), (t1[270], 102.5), 
+                        arrowstyle='->', 
+                        color='black',
+                        linewidth=2,
+                        mutation_scale=15)
+subplt.add_patch(arrow3)
+
+legend_state = mlines.Line2D([], [], color='darkslateblue', marker='o', markersize=5, linestyle='-', markeredgewidth=1)
+legend_pstate = mlines.Line2D([], [], markerfacecolor='none',color='crimson', marker='o', markersize=10, linestyle='None', markeredgewidth=3)
+
+subplt.legend(handles=[legend_state,legend_pstate],labels=['population','predicted population'],loc='lower center', frameon=False, bbox_to_anchor=(0.65, 0.05), handletextpad=0.2, markerscale=2.5,prop={'size':36})
 
 subplt = ax2
 
-legend_hopf_hopf = subplt.scatter(t_hopf_hopf,bif_hopf_hopf,s=100,marker=r'$\checkmark$',c='royalblue',zorder=6)
-legend_hopf_fold = subplt.scatter(t_hopf_fold,bif_hopf_fold,s=80,marker=r'$\times$',c='crimson',zorder=5)
-legend_hopf_NA = subplt.scatter(t_hopf_NA,bif_hopf_NA,s=80,marker=r'$\times$',c='grey',zorder=5)
-# legend_hopf_blow = subplt.scatter(t_hopf_blow,bif_hopf_blow,s=80,marker='^',c='forestgreen',zorder=5)
-subplt.text(-0.1, 0.95,'b',ha='left', transform=subplt.transAxes,fontdict={'family':'DejaVu Sans','size':50,'weight':'bold'})
-subplt.set_xlabel('Timepoint',font_x,labelpad=-20)
-# subplt.yaxis.set_label_coords(-0.05, 0.475)
-subplt.set_ylim(-0.1,0.85)
-subplt.set_xticks([500,1000])
-subplt.set_yticks([0.1,hopf_bif])
-subplt.axhline(y=0, color='black', linestyle=':', linewidth=2)
-subplt.axhline(y=hopf_bif, color='royalblue', linestyle='--', linewidth=2)
-subplt.text(1030,hopf_bif,'Hopf', fontsize=28, ha='left', va='center', color='black')
-subplt.text(750,-0.05,'divergence or no bifurcation', fontsize=24, ha='left', va='center', color='black')
-subplt.set_yticklabels(['(0.1,1.1)','(0.55,0.65)'])
+subplt.scatter(t2,rrate,s=40,c='crimson',marker='^')
+subplt.set_xlabel('Time (day)',font_x,labelpad=-20)
+subplt.set_ylabel('Re',font_y2,labelpad=-10)
+subplt.set_xlim(24,25.5)
+subplt.set_xticks([24.25,25.25])
+subplt.set_xticklabels(['24.25','25.25'])
+subplt.set_ylim(-0.9,-0.1)
+subplt.set_yticks([-0.8,-0.2])
+subplt.set_yticklabels(['-0.8','-0.2'])
+subplt.text(-0.075, 0.96,'b',ha='left', transform=subplt.transAxes,fontdict={'family':'DejaVu Sans','size':50,'weight':'bold'})
 
-subplt.set_title('Epidemiological system (codim-2 Hopf)', fontsize=40, fontweight='normal', fontfamily='Arial', y=1.03)
-subplt.legend(handles=[legend_hopf_hopf,legend_hopf_fold,legend_hopf_NA],labels=['Hopf','fold','no bifurcation'],loc='center left', bbox_to_anchor=(0.05, 0.3),markerscale=2,prop={'size':24})
+legend_pred = mlines.Line2D([], [], color='crimson', marker='^', markersize=10, linestyle='None')
 
-fig.supylabel('Value of bifurcation',x=0.01, y=0.6, fontproperties=font_y)
+subplt.legend(handles=[legend_pred],labels=['estimated Re'],loc='upper center', frameon=False, bbox_to_anchor=(0.7,0.3), handletextpad=0, markerscale=2.5,prop={'size':36})
 
-plt.subplots_adjust(top=0.94, bottom=0.06, left=0.16, right=0.92, hspace=0.18)
+plt.subplots_adjust(top=0.98, bottom=0.06, left=0.13, right=0.96, hspace=0.15)
 plt.savefig('../figures/FIG4.pdf',format='pdf',dpi=600)
-
-
-
