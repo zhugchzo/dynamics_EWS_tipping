@@ -49,6 +49,7 @@ for random_seed in range(100):
     x_tseries = np.array(values_tseries[:,-2:])
 
     DEV_list = list()
+    imag_list = list()
 
     for winstart in range(0,test_length,20):
 
@@ -65,16 +66,21 @@ for random_seed in range(100):
 
         eigenvalues = np.linalg.eigvals(Jaco_matrix)
 
-        DEV = np.max(np.abs(eigenvalues))
+        idx = np.argmax(np.abs(eigenvalues))
+        lam = eigenvalues[idx]
+
+        DEV = np.abs(lam)
+        Im = lam.imag  
 
         DEV_list.append(DEV)
+        imag_list.append(Im)
 
-    dic_DEV = {'Time':tseries[train_length - 1 : -1][::20],'DEV':DEV_list}
+    dic_DEV = {'Time':tseries[train_length - 1 : -1][::20],'DEV':DEV_list, 'imag':imag_list}
 
     csv_out = pd.DataFrame(dic_DEV)
     csv_out.to_csv('../../results/ROC/sup_hopf/ews/DEV_sup_hopf_{}.csv'.format(random_seed),header = True)
 
-# ################################################################################################
+################################################################################################
 
 for random_seed in range(100):
 

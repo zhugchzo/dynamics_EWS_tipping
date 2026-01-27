@@ -82,7 +82,7 @@ def convert_bifdata(filepath):
     
     # If non-empty
     if df_bifs.size != 0:
-        
+
         # Bifurcation type
         bif_type = labels[df_bifs['TY'].iloc[0]]
         

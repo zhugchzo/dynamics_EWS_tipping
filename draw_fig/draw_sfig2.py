@@ -2,111 +2,151 @@ import pandas
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch
 import matplotlib.lines as mlines
+from matplotlib import font_manager
 
 font_x = {'family':'Arial','weight':'normal','size': 40}
 font_y = {'family':'Arial','weight':'normal','size': 40}
-font_in_x = {'family':'Arial','weight':'normal','size': 36}
-font_in_y = {'family':'Arial','weight':'normal','size': 36}
 
 plt.rcParams['font.family'] = 'Arial'
-plt.rcParams['axes.labelweight'] = 'bold'
+plt.rcParams['axes.labelweight'] = 'normal'
 plt.rcParams['xtick.labelsize'] = 36
 plt.rcParams['ytick.labelsize'] = 36
 
-fig, axs = plt.subplots(2, 1, figsize=(12,15))
+fig, axs = plt.subplots(2, 2, figsize=(20,16))
 
-(ax1, ax2) = axs.flatten()
+(ax1, ax3, ax2, ax4) = axs.flatten()
 
-df_fold = pandas.read_csv('../data/fold_network/fold_network.csv')
-df_results = pandas.read_csv('../results/fold_network/global_fold_network.csv')
+df_fold = pandas.read_csv('../data/fold/fold.csv')
+df_fold_results = pandas.read_csv('../results/fold/fold.csv')
+
+df_nobif = pandas.read_csv('../data/no_bif/no_bif_train.csv')
+df_nobif_results = pandas.read_csv('../results/no_bif/no_bif.csv')
 
 t1 = df_fold['Time'] + 1
-t2 = df_results['Time'] + 1
+t2 = df_fold_results['Time'] + 1
 
-x = df_fold['traj_x']
-pred_x = df_results['pred_x']
+t3 = df_nobif['Time'] + 1
+t4 = df_nobif_results['Time'] + 1
 
-rrate = df_results['real_eval']
-esti_real = df_results['esti_real_eval1']
-esti_imag = df_results['esti_imag_eval1']
+fold_x = df_fold['traj_x']
 
-subplt = ax1
+nobif_x = df_nobif['traj_x']
 
-subplt.scatter(t1[::5],x[::5],s=25,c='darkslateblue',marker='o')
-subplt.plot(t1[::5],x[::5],c='darkslateblue')
-subplt.scatter(t2[::5]+1,pred_x[::5],s=100, marker='o',facecolors='none',edgecolors='crimson')
-subplt.scatter(1000,x[1000],s=500, marker='o',facecolors='white', edgecolors='black',zorder=5)
-subplt.set_ylabel('system state',font_y,labelpad=-25)
-subplt.set_xlim(-55,1100)
-subplt.set_xticks([0,1000])
-subplt.set_ylim(6,13.5)
-subplt.set_yticks([7,12])
-subplt.set_yticklabels(['7','12'])
-subplt.text(820,9.5,'fold',size=48)
-subplt.tick_params(axis='x', labelbottom=False)
-subplt.text(-0.075, 0.96,'a',ha='left', transform=subplt.transAxes,fontdict={'family':'DejaVu Sans','size':50,'weight':'bold'})
-subplt.axvline(x=0, color='black', linestyle='--', linewidth=2)
-subplt.axvline(x=500, color='black', linestyle='--', linewidth=2)
+fold_rrate = df_fold_results['rrate']
+fold_esti_rrate = df_fold_results['esti_rrate']
 
-subplt.plot([15, 484], [11.5, 11.5], linestyle='--', color='black', linewidth=2)
-arrow1 = FancyArrowPatch((5, 11.5), (494, 11.5), 
+nobif_rrate = df_nobif_results['rrate']
+nobif_esti_rrate = df_nobif_results['esti_rrate']
+
+train_length = 500
+length = 1000
+
+ax1.scatter(t1[::5],fold_x[::5],s=40,c='darkslateblue',marker='o')
+ax1.plot(t1[::5],fold_x[::5],c='darkslateblue',linewidth=3)
+ax1.scatter(t1[train_length:length][::5],fold_x[train_length:length][::5],s=40,c='crimson',marker='o')
+ax1.plot(t1[train_length:length][::5],fold_x[train_length:length][::5],c='crimson',linewidth=3)
+ax1.scatter(1000,fold_x[1000],s=500, marker='o',facecolors='white', edgecolors='black',linewidths=3,zorder=5)
+ax1.set_ylabel('System state',font_y,labelpad=45)
+ax1.set_xlim(-55,1100)
+ax1.set_ylim(-0.1,9)
+ax1.set_yticks([1,7])
+ax1.set_yticklabels(['1','7'])
+ax1.tick_params(axis='x', bottom=False, labelbottom=False)
+ax1.tick_params(direction='in', length=10)
+# ax1.text(850,3.7,'fold',size=40)
+ax1.text(0.06,0.93,'(a)',ha='left', transform=ax1.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax1.axvline(x=0, color='black', linestyle='--', linewidth=2, zorder=0)
+ax1.axvline(x=500, color='black', linestyle='--', linewidth=2, zorder=0)
+
+ax1.plot([15, 484], [6, 6], linestyle='--', color='black', linewidth=2)
+arrow1 = FancyArrowPatch((5, 6), (494, 6), 
                         arrowstyle='<|-|>', 
                         color='black',
                         linewidth = 0, 
-                        mutation_scale=25)
-subplt.add_patch(arrow1)
+                        mutation_scale=30)
+ax1.add_patch(arrow1)
 
-subplt.text(240,11,'sliding window', fontsize=36, ha='center', va='center', color='black')
-arrow2 = FancyArrowPatch((430, 11), (470, 11), 
+ax1.text(240,5.5,'sliding window', fontsize=32, ha='center', va='center', color='black')
+arrow2 = FancyArrowPatch((450, 5.5), (490, 5.5), 
                         arrowstyle='->', 
                         color='black',
                         linewidth=2,
-                        mutation_scale=15)
-subplt.add_patch(arrow2)
+                        mutation_scale=20)
+ax1.add_patch(arrow2)
 
-legend_state = mlines.Line2D([], [], color='darkslateblue', marker='o', markersize=5, linestyle='-', markeredgewidth=1)
-legend_pstate = mlines.Line2D([], [], markerfacecolor='none',color='crimson', marker='o', markersize=10, linestyle='None', markeredgewidth=3)
+ax2.plot(t2,fold_rrate,c='darkviolet',linewidth=8,alpha=0.8)
+ax2.scatter(t2,fold_esti_rrate,s=80,marker='o',facecolors='none',edgecolors='crimson',zorder=5)
+ax2.set_xlabel('Timepoint',font_x)
+ax2.set_ylabel('Re',font_y,labelpad=0)
+ax2.set_xlim(-55,1100)
+ax2.set_xticks([0,500,1000])
+ax2.set_xticklabels(['0','500','1000'])
+ax2.set_ylim(-0.6,0.05)
+ax2.set_yticks([-0.5,0])
+ax2.set_yticklabels(['-0.5','0'])
+ax2.tick_params(direction='in', length=10)
+ax2.tick_params(axis='x', pad=10)
+ax2.text(0.06,0.93,'(c)',ha='left', transform=ax2.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax2.axvline(x=500, color='black', linestyle='--', linewidth=2, zorder=0)
 
-subplt.legend(handles=[legend_state,legend_pstate],labels=['mean state','mean predicted\n     state'],loc='lower center', frameon=False, bbox_to_anchor=(0.7, 0.05), handletextpad=0.2, markerscale=2.5,prop={'size':36})
+ax3.scatter(t3[::5],nobif_x[::5],s=40,c='darkslateblue',marker='o')
+ax3.plot(t3[::5],nobif_x[::5],c='darkslateblue',linewidth=3)
+ax3.scatter(t3[train_length:length][::5],nobif_x[train_length:length][::5],s=40,c='crimson',marker='o')
+ax3.plot(t3[train_length:length][::5],nobif_x[train_length:length][::5],c='crimson',linewidth=3)
+ax3.set_xlim(-55,1055)
+ax3.set_xticks([0,1000])
+ax3.set_ylim(0.25,1.1)
+ax3.set_yticks([0.3,0.9])
+ax3.set_yticklabels(['0.3','0.9'])
+ax3.tick_params(axis='x', bottom=False, labelbottom=False)
+ax3.tick_params(direction='in', length=10)
+ax3.text(0.06,0.93,'(b)',ha='left', transform=ax3.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax3.axvline(x=0, color='black', linestyle='--', linewidth=2)
+ax3.axvline(x=500, color='black', linestyle='--', linewidth=2)
+# ax3.text(600,0.5,'no transition',size=40)
 
-subplt = ax2
+ax3.plot([15, 484], [0.4, 0.4], linestyle='--', color='black', linewidth=2)
+arrow1 = FancyArrowPatch((5, 0.4), (494, 0.4), 
+                        arrowstyle='<|-|>', 
+                        color='black',
+                        linewidth = 0, 
+                        mutation_scale=30)
+ax3.add_patch(arrow1)
 
-subplt.scatter(t2,rrate,s=20,c='darkslateblue',marker='^')
-subplt.scatter(t2,esti_real,s=20,c='crimson',marker='^')
-subplt.scatter(1000,rrate[499],s=500,marker='^',facecolors='white', edgecolors='black')
-subplt.text(680,-0.02,'reach zero',size=40)
-subplt.set_xlabel('Timepoint',font_x,labelpad=-20)
-subplt.set_ylabel('Re',font_y,labelpad=-50)
-subplt.set_xlim(-55,1100)
-subplt.set_xticks([0,1000])
-subplt.set_ylim(-0.6,0.05)
-subplt.set_yticks([-0.5,0])
-subplt.set_yticklabels(['-0.5','0'])
-subplt.text(-0.075, 0.96,'b',ha='left', transform=subplt.transAxes,fontdict={'family':'DejaVu Sans','size':50,'weight':'bold'})
-subplt.axvline(x=500, color='black', linestyle='--', linewidth=2)
+ax3.text(240,0.35,'sliding window', fontsize=32, ha='center', va='center', color='black')
+arrow2 = FancyArrowPatch((450, 0.35), (490, 0.35), 
+                        arrowstyle='->', 
+                        color='black',
+                        linewidth=2,
+                        mutation_scale=20)
+ax3.add_patch(arrow2)
 
-ax_inset = fig.add_axes([0.12, 0.17, 0.33, 0.22])
+ax4.plot(t4,nobif_rrate,c='darkviolet',linewidth=8,alpha=0.8)
+ax4.scatter(t4,nobif_esti_rrate,s=80,marker='o',facecolors='none',edgecolors='crimson',zorder=5)
+ax4.set_xlabel('Timepoint',font_x)
+ax4.set_xlim(-55,1055)
+ax4.set_xticks([0,500,1000])
+ax4.set_xticklabels(['0','500','1000'])
+ax4.set_ylim(-1,-0.5)
+ax4.set_yticks([-0.9,-0.6])
+ax4.set_yticklabels(['-0.9','-0.6'])
+ax4.tick_params(direction='in', length=10)
+ax4.tick_params(axis='x', pad=10)
+ax4.text(0.06,0.93,'(d)',ha='left', transform=ax4.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax4.axvline(x=500, color='black', linestyle='--', linewidth=2)
 
-ax_inset.scatter(t2[::5],esti_imag[::5], s=80, marker='^',facecolors='none',edgecolors='crimson')
-ax_inset.axhline(y=0, color='black', linestyle='--')
-ax_inset.set_xlabel('Timepoint',font_in_x,labelpad=-5)
-ax_inset.set_ylabel('Im',font_in_y)
-ax_inset.set_xticks([500,1000])
-ax_inset.set_xticklabels([500,1000], fontsize=32)
-ax_inset.set_yticks([0])
-ax_inset.set_yticklabels([0], fontsize=32)
-ax_inset.set_ylim(-1.1,1.1)
-ax_inset.yaxis.tick_right()
-ax_inset.yaxis.set_label_position("right") 
-ax_inset.yaxis.set_label_coords(1.1, 0.96)
-ax_inset.yaxis.label.set_rotation(360)
-inset_legend_pred = mlines.Line2D([], [],  markerfacecolor='none',color='crimson', marker='^', markersize=5, linestyle='None', markeredgewidth=3)
-ax_inset.legend([inset_legend_pred],['estimated Im'],fontsize=36,frameon=False,loc='upper center', bbox_to_anchor=(0.5,0.3),handletextpad=0,markerscale=3)
+legend_state = mlines.Line2D([], [], color='darkslateblue', linestyle='-',marker='o', linewidth=3, markersize=15)
+legend_pstate = mlines.Line2D([], [], color='crimson', linestyle='-',marker='o', linewidth=3, markersize=15)
+legend_bif = mlines.Line2D([], [], linestyle='None', marker='o',markerfacecolor='white', markeredgecolor='black',
+    markersize=20, markeredgewidth=3)
+legend_true_re = mlines.Line2D([], [], color='darkviolet', linestyle='-',linewidth=6)
+legend_esti_re = mlines.Line2D([], [], linestyle='None', marker='o',markerfacecolor='white', markeredgecolor='crimson',
+    markersize=20, markeredgewidth=1)
 
-legend_gt = mlines.Line2D([], [], color='darkslateblue', marker='^', markersize=10, linestyle='None')
-legend_pred = mlines.Line2D([], [], color='crimson', marker='^', markersize=10, linestyle='None')
+fig.legend(handles = [legend_state, legend_pstate, legend_bif, legend_true_re, legend_esti_re],
+            labels = ['State','Forecast interval','Bifurcation point', 'True Re', 'Estimated Re'],
+              loc='upper center', bbox_to_anchor=(0.5,1.01), ncol=5, frameon=False, 
+              prop=font_manager.FontProperties(family='Arial', size=30, weight='normal'),handletextpad=0.4)
 
-subplt.legend(handles=[legend_gt,legend_pred],labels=['ground truth','estimated Re'],loc='upper center', frameon=False, bbox_to_anchor=(0.8,0.3), handletextpad=0, markerscale=2.5,prop={'size':36})
-
-plt.subplots_adjust(top=0.98, bottom=0.06, left=0.08, right=0.99, hspace=0.05)
-plt.savefig('../figures/SFIG2.pdf',format='pdf',dpi=600)
+plt.subplots_adjust(top=0.9, bottom=0.08, left=0.08, right=0.99, hspace=0.15, wspace=0.2)
+plt.savefig('../figures/SFIG2.pdf',format='pdf')

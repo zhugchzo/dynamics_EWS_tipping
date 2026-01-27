@@ -34,7 +34,7 @@ bl = 1
 bh = 3 # bifurcation parameter high
 c_rate = 6e-5 # bifurcation parameter change rate
 
-np.random.seed(15)
+np.random.seed(57)
 
 sim_len = int((bh-bl)*dt/c_rate)
 series_len = 1000

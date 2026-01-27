@@ -1,153 +1,431 @@
-import pandas
+import numpy as np
+import pandas as pd
+from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyArrowPatch
 import matplotlib.lines as mlines
+from matplotlib import font_manager
 
-font_x = {'family':'Arial','weight':'normal','size': 40}
-font_y = {'family':'Arial','weight':'normal','size': 40}
+font_x = {'family':'Arial','weight':'normal','size': 14}
+font_y = {'family':'Arial','weight':'normal','size': 14}
 
 plt.rcParams['font.family'] = 'Arial'
-plt.rcParams['axes.labelweight'] = 'bold'
-plt.rcParams['xtick.labelsize'] = 36
-plt.rcParams['ytick.labelsize'] = 36
+plt.rcParams['axes.labelweight'] = 'normal'
+plt.rcParams['xtick.labelsize'] = 14
+plt.rcParams['ytick.labelsize'] = 14
 
-fig, axs = plt.subplots(2, 2, figsize=(24,15))
+################################################################################################
 
-(ax1, ax3, ax2, ax4) = axs.flatten()
+n = 100
 
-df = pandas.read_csv('../data/fold/fold.csv')
-df_sindy_results = pandas.read_csv('../results/fold/SINDy_fold.csv')
-df_mlp_results = pandas.read_csv('../results/fold/MLP_nonlin_fold.csv')
+label = np.concatenate((np.ones(n), np.zeros(n)), axis=0)
+label_steady = np.concatenate((np.ones(n), np.ones(n), np.ones(n), np.zeros(n), np.zeros(n)), axis=0)
 
-t1 = df['Time'] + 1
-t2 = df_sindy_results['Time'] + 1
-t3 = df_mlp_results['Time'] + 1
+################################################################################################
 
-x = df['traj_x']
-sindy_pred_x = df_sindy_results['pred_x']
-mlp_pred_x = df_mlp_results['pred_x']
+fold_ER_dynamics = pd.read_csv('../results/ROC/fold_ER/dynamics_tau.csv')
+fold_ER_null_dynamics = pd.read_csv('../results/ROC/fold_ER/dynamics_tau_null.csv')
 
-rrate = df_sindy_results['rrate']
-sindy_esti_rrate = df_sindy_results['esti_rrate']
-mlp_esti_rrate = df_mlp_results['esti_rrate']
+fold_ER_ac = pd.read_csv('../results/ROC/fold_ER/lag-1_tau.csv')
+fold_ER_null_ac = pd.read_csv('../results/ROC/fold_ER/lag-1_tau_null.csv')
 
-subplt = ax1
+fold_ER_dev = pd.read_csv('../results/ROC/fold_ER/DEV_tau.csv')
+fold_ER_null_dev = pd.read_csv('../results/ROC/fold_ER/DEV_tau_null.csv')
 
-subplt.scatter(t1[::5],x[::5],s=25,c='darkslateblue',marker='o')
-subplt.plot(t1[::5],x[::5],c='darkslateblue')
-subplt.scatter(t2[::5]+1,sindy_pred_x[::5],s=100, marker='o',facecolors='none',edgecolors='crimson')
-subplt.scatter(1000,x[1000],s=500, marker='o',facecolors='white', edgecolors='black',zorder=5)
-subplt.set_ylabel('system state',font_y,labelpad=-5)
-subplt.set_xlim(-55,1100)
-subplt.set_xticks([0,1000])
-subplt.set_ylim(-0.1,8.5)
-subplt.set_yticks([1,7])
-subplt.tick_params(axis='x', labelbottom=False)
-subplt.set_yticklabels(['1','7'])
-subplt.text(820,3.7,'fold',size=48)
-subplt.text(-0.075, 0.96,'a',ha='left', transform=subplt.transAxes,fontdict={'family':'DejaVu Sans','size':50,'weight':'bold'})
-subplt.axvline(x=0, color='black', linestyle='--', linewidth=2)
-subplt.axvline(x=500, color='black', linestyle='--', linewidth=2)
+fold_BA_dynamics = pd.read_csv('../results/ROC/fold_BA/dynamics_tau.csv')
+fold_BA_null_dynamics = pd.read_csv('../results/ROC/fold_BA/dynamics_tau_null.csv')
 
-subplt.plot([15, 484], [6, 6], linestyle='--', color='black', linewidth=2)
-arrow1 = FancyArrowPatch((5, 6), (494, 6), 
-                        arrowstyle='<|-|>', 
-                        color='black',
-                        linewidth = 0, 
-                        mutation_scale=25)
-subplt.add_patch(arrow1)
+fold_BA_ac = pd.read_csv('../results/ROC/fold_BA/lag-1_tau.csv')
+fold_BA_null_ac = pd.read_csv('../results/ROC/fold_BA/lag-1_tau_null.csv')
 
-subplt.text(240,5.5,'sliding window', fontsize=36, ha='center', va='center', color='black')
-arrow2 = FancyArrowPatch((430, 5.5), (460, 5.5), 
-                        arrowstyle='->', 
-                        color='black',
-                        linewidth=2,
-                        mutation_scale=15)
-subplt.add_patch(arrow2)
+fold_BA_dev = pd.read_csv('../results/ROC/fold_BA/DEV_tau.csv')
+fold_BA_null_dev = pd.read_csv('../results/ROC/fold_BA/DEV_tau_null.csv')
 
-legend_state = mlines.Line2D([], [], color='darkslateblue', marker='o', markersize=5, linestyle='-', markeredgewidth=1)
-legend_pstate = mlines.Line2D([], [], markerfacecolor='none',color='crimson', marker='o', markersize=10, linestyle='None', markeredgewidth=3)
+########################
 
-subplt.legend(handles=[legend_state,legend_pstate],labels=['state','predicted state\n    (SINDy)'],loc='lower center', frameon=False, bbox_to_anchor=(0.71, 0.05), handletextpad=0.2, markerscale=2.5,prop={'size':36})
+trans_dynamics = pd.read_csv('../results/ROC/trans/dynamics_tau.csv')
+trans_null_dynamics = pd.read_csv('../results/ROC/trans/dynamics_tau_null.csv')
 
-subplt = ax2
+trans_ac = pd.read_csv('../results/ROC/trans/lag-1_tau.csv')
+trans_null_ac = pd.read_csv('../results/ROC/trans/lag-1_tau_null.csv')
 
-subplt.scatter(t2,rrate,s=20,c='darkslateblue',marker='^')
-subplt.scatter(t2,sindy_esti_rrate,s=20,c='crimson',marker='^')
-subplt.scatter(1000,rrate[499],s=500,marker='^',facecolors='white', edgecolors='black')
-subplt.text(680,-0.02,'reach zero',size=40)
-subplt.set_xlabel('Timepoint',font_x,labelpad=-20)
-subplt.set_ylabel('Re',font_y,labelpad=-55)
-subplt.set_xlim(-55,1100)
-subplt.set_xticks([0,1000])
-subplt.set_ylim(-0.55,0.05)
-subplt.set_yticks([-0.5,0])
-subplt.set_yticklabels(['-0.5','0'])
-subplt.text(-0.075, 0.96,'c',ha='left', transform=subplt.transAxes,fontdict={'family':'DejaVu Sans','size':50,'weight':'bold'})
-subplt.axvline(x=500, color='black', linestyle='--', linewidth=2)
+trans_dev = pd.read_csv('../results/ROC/trans/DEV_tau.csv')
+trans_null_dev = pd.read_csv('../results/ROC/trans/DEV_tau_null.csv')
 
-legend_gt = mlines.Line2D([], [], color='darkslateblue', marker='^', markersize=10, linestyle='None')
-legend_pred = mlines.Line2D([], [], color='crimson', marker='^', markersize=10, linestyle='None')
+########################
 
-subplt.legend(handles=[legend_gt,legend_pred],labels=['ground truth','estimated Re\n    (SINDy)'],loc='upper center', frameon=False, bbox_to_anchor=(0.25,0.6), handletextpad=0, markerscale=2.5,prop={'size':36})
+sup_hopf_dynamics = pd.read_csv('../results/ROC/sup_hopf/dynamics_tau.csv')
+sup_hopf_null_dynamics = pd.read_csv('../results/ROC/sup_hopf/dynamics_tau_null.csv')
 
-subplt = ax3
+sup_hopf_ac = pd.read_csv('../results/ROC/sup_hopf/lag-1_tau.csv')
+sup_hopf_null_ac = pd.read_csv('../results/ROC/sup_hopf/lag-1_tau_null.csv')
 
-subplt.scatter(t1[::5],x[::5],s=25,c='darkslateblue',marker='o')
-subplt.plot(t1[::5],x[::5],c='darkslateblue')
-subplt.scatter(t3[::5]+1,mlp_pred_x[::5],s=100, marker='o',facecolors='none',edgecolors='crimson')
-subplt.scatter(1000,x[1000],s=500, marker='o',facecolors='white', edgecolors='black',zorder=5)
-subplt.set_xlim(-55,1100)
-subplt.set_xticks([0,1000])
-subplt.set_ylim(-0.1,8.5)
-subplt.set_yticks([1,7])
-subplt.tick_params(axis='x', labelbottom=False)
-subplt.set_yticklabels(['1','7'])
-subplt.text(820,3.7,'fold',size=48)
-subplt.text(-0.075, 0.93,'b',ha='left', transform=subplt.transAxes,fontdict={'family':'DejaVu Sans','size':50,'weight':'bold'})
-subplt.axvline(x=0, color='black', linestyle='--', linewidth=2)
-subplt.axvline(x=500, color='black', linestyle='--', linewidth=2)
+sup_hopf_dev = pd.read_csv('../results/ROC/sup_hopf/DEV_tau.csv')
+sup_hopf_null_dev = pd.read_csv('../results/ROC/sup_hopf/DEV_tau_null.csv')
 
-subplt.plot([15, 484], [6, 6], linestyle='--', color='black', linewidth=2)
-arrow1 = FancyArrowPatch((5, 6), (494, 6), 
-                        arrowstyle='<|-|>', 
-                        color='black',
-                        linewidth = 0, 
-                        mutation_scale=25)
-subplt.add_patch(arrow1)
+########################
 
-subplt.text(240,5.5,'sliding window', fontsize=36, ha='center', va='center', color='black')
-arrow2 = FancyArrowPatch((430, 5.5), (460, 5.5), 
-                        arrowstyle='->', 
-                        color='black',
-                        linewidth=2,
-                        mutation_scale=15)
-subplt.add_patch(arrow2)
+sub_hopf_dynamics = pd.read_csv('../results/ROC/sub_hopf/dynamics_tau.csv')
+sub_hopf_null_dynamics = pd.read_csv('../results/ROC/sub_hopf/dynamics_tau_null.csv')
 
-legend_state = mlines.Line2D([], [], color='darkslateblue', marker='o', markersize=5, linestyle='-', markeredgewidth=1)
-legend_pstate = mlines.Line2D([], [], markerfacecolor='none',color='crimson', marker='o', markersize=10, linestyle='None', markeredgewidth=3)
+sub_hopf_ac = pd.read_csv('../results/ROC/sub_hopf/lag-1_tau.csv')
+sub_hopf_null_ac = pd.read_csv('../results/ROC/sub_hopf/lag-1_tau_null.csv')
 
-subplt.legend(handles=[legend_state,legend_pstate],labels=['state','predicted state\n    (MLP)'],loc='lower center', frameon=False, bbox_to_anchor=(0.7, 0.05), handletextpad=0.2, markerscale=2.5,prop={'size':36})
+sub_hopf_dev = pd.read_csv('../results/ROC/sub_hopf/DEV_tau.csv')
+sub_hopf_null_dev = pd.read_csv('../results/ROC/sub_hopf/DEV_tau_null.csv')
 
-subplt = ax4
+################################################################################################
 
-subplt.scatter(t3,rrate,s=20,c='darkslateblue',marker='^')
-subplt.scatter(t3,mlp_esti_rrate,s=20,c='crimson',marker='^')
-subplt.scatter(1000,rrate[499],s=500,marker='^',facecolors='white', edgecolors='black')
-subplt.text(680,-0.02,'reach zero',size=40)
-subplt.set_xlabel('Timepoint',font_x,labelpad=-20)
-subplt.set_xlim(-55,1100)
-subplt.set_xticks([0,1000])
-subplt.set_ylim(-0.55,0.05)
-subplt.set_yticks([-0.5,0])
-subplt.set_yticklabels(['-0.5','0'])
-subplt.text(-0.075, 0.96,'d',ha='left', transform=subplt.transAxes,fontdict={'family':'DejaVu Sans','size':50,'weight':'bold'})
-subplt.axvline(x=500, color='black', linestyle='--', linewidth=2)
+fold_ER_dynamics_rate = pd.read_csv('../results/ROC/fold_ER/dynamics_rate.csv')
+fold_ER_dev_rate = pd.read_csv('../results/ROC/fold_ER/DEV_rate.csv')
 
-legend_gt = mlines.Line2D([], [], color='darkslateblue', marker='^', markersize=10, linestyle='None')
-legend_pred = mlines.Line2D([], [], color='crimson', marker='^', markersize=10, linestyle='None')
+fold_BA_dynamics_rate = pd.read_csv('../results/ROC/fold_BA/dynamics_rate.csv')
+fold_BA_dev_rate = pd.read_csv('../results/ROC/fold_BA/DEV_rate.csv')
 
-subplt.legend(handles=[legend_gt,legend_pred],labels=['ground truth','estimated Re\n    (MLP)'],loc='upper center', frameon=False, bbox_to_anchor=(0.25,0.6), handletextpad=0, markerscale=2.5,prop={'size':36})
+sup_hopf_dynamics_rate = pd.read_csv('../results/ROC/sup_hopf/dynamics_rate.csv')
+sup_hopf_dev_rate = pd.read_csv('../results/ROC/sup_hopf/DEV_rate.csv')
 
-plt.subplots_adjust(top=0.98, bottom=0.06, left=0.04, right=0.99, hspace=0.05, wspace=0.15)
-plt.savefig('../figures/FIG2.pdf',format='pdf',dpi=600)
+trans_dynamics_rate = pd.read_csv('../results/ROC/trans/dynamics_rate.csv')
+trans_dev_rate = pd.read_csv('../results/ROC/trans/DEV_rate.csv')
+
+sub_hopf_dynamics_rate = pd.read_csv('../results/ROC/sub_hopf/dynamics_rate.csv')
+sub_hopf_dev_rate = pd.read_csv('../results/ROC/sub_hopf/DEV_rate.csv')
+
+################################################################################################
+
+fig, axs = plt.subplots(1, 6, figsize=(15,3.5))
+
+for ax in axs.flat:
+    ax.set_aspect('equal', adjustable='box')
+
+ax1, ax2, ax3, ax4, ax5, ax6 = axs[0], axs[1], axs[2], axs[3], axs[4], axs[5]
+
+################################################################################################
+
+dynamics_tau_ER = fold_ER_dynamics['tau'].to_numpy()
+null_dynamics_tau_ER = fold_ER_null_dynamics['tau'].to_numpy()
+
+dynamics_tau_BA = fold_BA_dynamics['tau'].to_numpy()
+null_dynamics_tau_BA = fold_BA_null_dynamics['tau'].to_numpy()
+
+dynamics_ER = np.concatenate((dynamics_tau_ER, null_dynamics_tau_ER), axis=0)
+dynamics_BA = np.concatenate((dynamics_tau_BA, null_dynamics_tau_BA), axis=0)
+
+fpr_dynamics_ER, tpr_dynamics_ER, thresholds_dynamics_ER = roc_curve(label, dynamics_ER)
+auc_dynamics_ER = auc(fpr_dynamics_ER, tpr_dynamics_ER)
+
+fpr_dynamics_BA, tpr_dynamics_BA, thresholds_dynamics_BA = roc_curve(label, dynamics_BA)
+auc_dynamics_BA = auc(fpr_dynamics_BA, tpr_dynamics_BA)
+
+########################
+
+ac_tau_ER = fold_ER_ac['tau'].to_numpy()
+null_ac_tau_ER = fold_ER_null_ac['tau'].to_numpy()
+
+ac_tau_BA = fold_BA_ac['tau'].to_numpy()
+null_ac_tau_BA = fold_BA_null_ac['tau'].to_numpy()
+
+ac_ER = np.concatenate((ac_tau_ER, null_ac_tau_ER), axis=0)
+ac_BA = np.concatenate((ac_tau_BA, null_ac_tau_BA), axis=0)
+
+fpr_ac_ER, tpr_ac_ER, thresholds_ac_ER = roc_curve(label, ac_ER)
+auc_ac_ER = auc(fpr_ac_ER, tpr_ac_ER)
+
+fpr_ac_BA, tpr_ac_BA, thresholds_ac_BA = roc_curve(label, ac_BA)
+auc_ac_BA = auc(fpr_ac_BA, tpr_ac_BA)
+
+########################
+
+dev_tau_ER = fold_ER_dev['tau'].to_numpy()
+null_dev_tau_ER = fold_ER_null_dev['tau'].to_numpy()
+
+dev_tau_BA = fold_BA_dev['tau'].to_numpy()
+null_dev_tau_BA = fold_BA_null_dev['tau'].to_numpy()
+
+dev_ER = np.concatenate((dev_tau_ER, null_dev_tau_ER), axis=0)
+dev_BA = np.concatenate((dev_tau_BA, null_dev_tau_BA), axis=0)
+
+fpr_dev_ER, tpr_dev_ER, thresholds_dev_ER = roc_curve(label, dev_ER)
+auc_dev_ER = auc(fpr_dev_ER, tpr_dev_ER)
+
+fpr_dev_BA, tpr_dev_BA, thresholds_dev_BA = roc_curve(label, dev_BA)
+auc_dev_BA = auc(fpr_dev_BA, tpr_dev_BA)
+
+################################################################################################
+
+textstr = '\n'.join([
+    r'$\text{A}_{\text{UEWS}} = %.2f$' % auc_dynamics_ER,
+    r'$\text{A}_{\text{AC}} = %.2f$' % auc_ac_ER,
+    r'$\text{A}_{\text{DEV}} = %.2f$' % auc_dev_ER
+])
+
+ax1.plot(fpr_dynamics_ER, tpr_dynamics_ER, c='crimson',linewidth=2,zorder=3)
+ax1.plot(fpr_ac_ER, tpr_ac_ER, c='darkslateblue',linewidth=2,zorder=2)
+ax1.plot(fpr_dev_ER, tpr_dev_ER, c='darkorange',linewidth=2,zorder=1)
+ax1.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+
+ax1.text(0.45, 0.35, textstr, transform=ax1.transAxes, fontsize=12,
+         verticalalignment='top')
+
+ax1.set_xlabel('False positive rate',font_x)
+ax1.set_ylabel('True positive rate',font_y)
+
+ax1.set_xticks([0,0.5,1])
+ax1.set_xticklabels(['0','0.5','1'])
+ax1.set_yticks([0,0.5,1])
+ax1.set_yticklabels(['0','0.5','1'])
+
+ax1.set_title('Mutualistic network (ER)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans', fontstyle= 'italic', y=1.02)
+ax1.text(0.83, 0.75,'(a)',ha='left', transform=ax1.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+
+################################################################################################
+
+textstr = '\n'.join([
+    r'$\text{A}_{\text{UEWS}} = %.2f$' % auc_dynamics_BA,
+    r'$\text{A}_{\text{AC}} = %.2f$' % auc_ac_BA,
+    r'$\text{A}_{\text{DEV}} = %.2f$' % auc_dev_BA
+])
+
+ax2.plot(fpr_dynamics_BA, tpr_dynamics_BA, c='crimson',linewidth=2,zorder=3)
+ax2.plot(fpr_ac_BA, tpr_ac_BA, c='darkslateblue',linewidth=2,zorder=2)
+ax2.plot(fpr_dev_BA, tpr_dev_BA, c='darkorange',linewidth=2,zorder=1)
+ax2.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+
+ax2.text(0.45, 0.35, textstr, transform=ax2.transAxes, fontsize=12,
+         verticalalignment='top')
+
+ax2.set_xlabel('False positive rate',font_x)
+
+ax2.set_xticks([0,0.5,1])
+ax2.set_xticklabels(['0','0.5','1'])
+ax2.set_yticks([0,0.5,1])
+ax2.set_yticklabels(['0','0.5','1'])
+
+ax2.set_title('Mutualistic network (BA)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax2.text(0.83, 0.75,'(b)',ha='left', transform=ax2.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+
+################################################################################################
+
+dynamics_tau = trans_dynamics['tau'].to_numpy()
+null_dynamics_tau = trans_null_dynamics['tau'].to_numpy()
+
+dynamics = np.concatenate((dynamics_tau, null_dynamics_tau), axis=0)
+
+fpr_dynamics, tpr_dynamics, thresholds_dynamics = roc_curve(label, dynamics)
+auc_dynamics = auc(fpr_dynamics, tpr_dynamics)
+
+########################
+
+ac_tau = trans_ac['tau'].to_numpy()
+null_ac_tau = trans_null_ac['tau'].to_numpy()
+
+ac = np.concatenate((ac_tau, null_ac_tau), axis=0)
+
+label_ac = np.concatenate((np.ones(len(ac_tau)), np.zeros(n)), axis=0)
+
+fpr_ac, tpr_ac, thresholds_ac = roc_curve(label_ac, ac)
+auc_ac = auc(fpr_ac, tpr_ac)
+
+########################
+
+dev_tau = trans_dev['tau'].to_numpy()
+null_dev_tau = trans_null_dev['tau'].to_numpy()
+
+dev = np.concatenate((dev_tau, null_dev_tau), axis=0)
+
+fpr_dev, tpr_dev, thresholds_dev = roc_curve(label, dev)
+auc_dev = auc(fpr_dev, tpr_dev)
+
+textstr = '\n'.join([
+    r'$\text{A}_{\text{UEWS}} = %.2f$' % auc_dynamics,
+    r'$\text{A}_{\text{AC}} = %.2f$' % auc_ac,
+    r'$\text{A}_{\text{DEV}} = %.2f$' % auc_dev
+])
+
+ax3.plot(fpr_dynamics, tpr_dynamics, c='crimson',linewidth=2,zorder=3)
+ax3.plot(fpr_ac, tpr_ac, c='darkslateblue',linewidth=2,zorder=2)
+ax3.plot(fpr_dev, tpr_dev, c='darkorange',linewidth=2,zorder=1)
+ax3.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+
+ax3.text(0.45, 0.35, textstr, transform=ax3.transAxes, fontsize=12,
+         verticalalignment='top')
+
+ax3.set_xlabel('False positive rate',font_x)
+
+ax3.set_xticks([0,0.5,1])
+ax3.set_xticklabels(['0','0.5','1'])
+ax3.set_yticks([0,0.5,1])
+ax3.set_yticklabels(['0','0.5','1'])
+
+ax3.set_title('Predator-prey (transcritical)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax3.text(0.83, 0.75,'(c)',ha='left', transform=ax3.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+
+################################################################################################
+
+dynamics_tau = sup_hopf_dynamics['tau'].to_numpy()
+null_dynamics_tau = sup_hopf_null_dynamics['tau'].to_numpy()
+
+dynamics = np.concatenate((dynamics_tau, null_dynamics_tau), axis=0)
+
+fpr_dynamics, tpr_dynamics, thresholds_dynamics = roc_curve(label, dynamics)
+auc_dynamics = auc(fpr_dynamics, tpr_dynamics)
+
+########################
+
+ac_tau = sup_hopf_ac['tau'].to_numpy()
+null_ac_tau = sup_hopf_null_ac['tau'].to_numpy()
+
+ac = np.concatenate((ac_tau, null_ac_tau), axis=0)
+
+label_ac = np.concatenate((np.ones(len(ac_tau)), np.zeros(n)), axis=0)
+
+fpr_ac, tpr_ac, thresholds_ac = roc_curve(label_ac, ac)
+auc_ac = auc(fpr_ac, tpr_ac)
+
+########################
+
+dev_tau = sup_hopf_dev['tau'].to_numpy()
+null_dev_tau = sup_hopf_null_dev['tau'].to_numpy()
+
+dev = np.concatenate((dev_tau, null_dev_tau), axis=0)
+
+fpr_dev, tpr_dev, thresholds_dev = roc_curve(label, dev)
+auc_dev = auc(fpr_dev, tpr_dev)
+
+textstr = '\n'.join([
+    r'$\text{A}_{\text{UEWS}} = %.2f$' % auc_dynamics,
+    r'$\text{A}_{\text{AC}} = %.2f$' % auc_ac,
+    r'$\text{A}_{\text{DEV}} = %.2f$' % auc_dev
+])
+
+ax4.plot(fpr_dynamics, tpr_dynamics, c='crimson',linewidth=2,zorder=3)
+ax4.plot(fpr_ac, tpr_ac, c='darkslateblue',linewidth=2,zorder=2)
+ax4.plot(fpr_dev, tpr_dev, c='darkorange',linewidth=2,zorder=1)
+ax4.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+
+ax4.text(0.08, 0.48, textstr, transform=ax4.transAxes, fontsize=11,
+         verticalalignment='top')
+
+ax4.set_xlabel('False positive rate',font_x)
+
+ax4.set_xticks([0,0.5,1])
+ax4.set_xticklabels(['0','0.5','1'])
+ax4.set_yticks([0,0.5,1])
+ax4.set_yticklabels(['0','0.5','1'])
+
+ax4.set_title('Predator-prey (Hopf)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax4.text(0.83, 0.75,'(d)',ha='left', transform=ax4.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+
+################################################################################################
+
+dynamics_tau = sub_hopf_dynamics['tau'].to_numpy()
+null_dynamics_tau = sub_hopf_null_dynamics['tau'].to_numpy()
+
+dynamics = np.concatenate((dynamics_tau, null_dynamics_tau), axis=0)
+
+fpr_dynamics, tpr_dynamics, thresholds_dynamics = roc_curve(label, dynamics)
+auc_dynamics = auc(fpr_dynamics, tpr_dynamics)
+
+########################
+
+ac_tau = sub_hopf_ac['tau'].to_numpy()
+null_ac_tau = sub_hopf_null_ac['tau'].to_numpy()
+
+ac = np.concatenate((ac_tau, null_ac_tau), axis=0)
+
+label_ac = np.concatenate((np.ones(len(ac_tau)), np.zeros(n)), axis=0)
+
+fpr_ac, tpr_ac, thresholds_ac = roc_curve(label_ac, ac)
+auc_ac = auc(fpr_ac, tpr_ac)
+
+########################
+
+dev_tau = sub_hopf_dev['tau'].to_numpy()
+null_dev_tau = sub_hopf_null_dev['tau'].to_numpy()
+
+dev = np.concatenate((dev_tau, null_dev_tau), axis=0)
+
+fpr_dev, tpr_dev, thresholds_dev = roc_curve(label, dev)
+auc_dev = auc(fpr_dev, tpr_dev)
+
+textstr = '\n'.join([
+    r'$\text{A}_{\text{UEWS}} = %.2f$' % auc_dynamics,
+    r'$\text{A}_{\text{AC}} = %.2f$' % auc_ac,
+    r'$\text{A}_{\text{DEV}} = %.2f$' % auc_dev
+])
+
+ax5.plot(fpr_dynamics, tpr_dynamics, c='crimson',linewidth=2,zorder=3)
+ax5.plot(fpr_ac, tpr_ac, c='darkslateblue',linewidth=2,zorder=2)
+ax5.plot(fpr_dev, tpr_dev, c='darkorange',linewidth=2,zorder=1)
+ax5.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+
+ax5.text(0.45, 0.35, textstr, transform=ax5.transAxes, fontsize=12,
+         verticalalignment='top')
+
+ax5.set_xlabel('False positive rate',font_x)
+
+ax5.set_xticks([0,0.5,1])
+ax5.set_xticklabels(['0','0.5','1'])
+ax5.set_yticks([0,0.5,1])
+ax5.set_yticklabels(['0','0.5','1'])
+
+ax5.set_title('Epidemic', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax5.text(0.83, 0.75,'(e)',ha='left', transform=ax5.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+
+################################################################################################
+
+dynamics_rate_ER = fold_ER_dynamics_rate['steady_rate'].to_numpy()
+dynamics_rate_BA = fold_BA_dynamics_rate['steady_rate'].to_numpy()
+dynamics_rate_sup_hopf = sup_hopf_dynamics_rate['steady_rate'].to_numpy()
+dynamics_rate_trans = trans_dynamics_rate['steady_rate'].to_numpy()
+dynamics_rate_sub_hopf = sub_hopf_dynamics_rate['steady_rate'].to_numpy()
+
+dev_rate_ER = fold_ER_dev_rate['steady_rate'].to_numpy()
+dev_rate_BA = fold_BA_dev_rate['steady_rate'].to_numpy()
+dev_rate_sup_hopf = sup_hopf_dev_rate['steady_rate'].to_numpy()
+dev_rate_trans = trans_dev_rate['steady_rate'].to_numpy()
+dev_rate_sub_hopf = sub_hopf_dev_rate['steady_rate'].to_numpy()
+
+dynamics_rate = np.concatenate((dynamics_rate_ER, dynamics_rate_BA, dynamics_rate_trans, dynamics_rate_sup_hopf, dynamics_rate_sub_hopf), axis=0)
+dev_rate = np.concatenate((dev_rate_ER, dev_rate_BA, dev_rate_trans, dev_rate_sup_hopf, dev_rate_sub_hopf), axis=0)
+
+fpr_dynamics_rate, tpr_dynamics_rate, thresholds_dynamics_rate = roc_curve(label_steady, dynamics_rate)
+auc_dynamics_rate = auc(fpr_dynamics_rate, tpr_dynamics_rate)
+
+fpr_dev_rate, tpr_dev_rate, thresholds_dev_rate = roc_curve(label_steady, dev_rate)
+auc_dev_rate = auc(fpr_dev_rate, tpr_dev_rate)
+
+textstr = '\n'.join([
+    r'$\text{A}_{\text{UEWS}} = %.2f$' % auc_dynamics_rate,
+    r'$\text{A}_{\text{DEV}} = %.2f$' % auc_dev_rate
+])
+
+ax6.plot(fpr_dynamics_rate, tpr_dynamics_rate, c='crimson',linewidth=2,zorder=3)
+ax6.plot(fpr_dev_rate, tpr_dev_rate, c='darkorange',linewidth=2,zorder=1)
+ax6.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+
+ax6.text(0.45, 0.35, textstr, transform=ax6.transAxes, fontsize=12,
+         verticalalignment='top')
+
+ax6.set_xlabel('False positive rate',font_x)
+
+ax6.set_xticks([0,0.5,1])
+ax6.set_xticklabels(['0','0.5','1'])
+ax6.set_yticks([0,0.5,1])
+ax6.set_yticklabels(['0','0.5','1'])
+
+ax6.set_title('Classification', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax6.text(0.83, 0.75,'(f)',ha='left', transform=ax6.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+
+################################################################################################
+
+legend_dynamics = mlines.Line2D([], [], color='crimson',linestyle='-',linewidth=3)
+legend_ac = mlines.Line2D([], [], color='darkslateblue',linestyle='-',linewidth=3)
+legend_dev = mlines.Line2D([], [], color='darkorange',linestyle='-',linewidth=3)
+
+fig.legend(handles = [legend_dynamics, legend_ac, legend_dev],
+            labels = ['Universal EWS','Lag-1 AC','Dynamical eigenvalue'],
+              loc='upper center', bbox_to_anchor=(0.5,1.01), ncol=3, frameon=False, 
+              prop=font_manager.FontProperties(family='Arial', size=15))
+
+plt.subplots_adjust(top=0.8, bottom=0.1, left=0.045, right=0.995, wspace=0.25)
+plt.savefig('../figures/FIG2.pdf',format='pdf')

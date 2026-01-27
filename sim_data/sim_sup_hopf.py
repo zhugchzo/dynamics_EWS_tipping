@@ -120,7 +120,7 @@ kl = 1.6
 kh = 4 # 2.9 control parameter final value
 c_rate = 1e-5
 
-np.random.seed(78)
+np.random.seed(37)
 
 sim_len = int((kh-kl)*dt/c_rate)
 series_len = 1000
@@ -250,7 +250,7 @@ df_temp_c2 = df_temp_c2[cols]
 
 stable_list = []
 
-df_temp_c1_stable = df_temp_c1[['Time','equix','equiy','b','imag_eval1']].iloc[-30:]
+df_temp_c1_stable = df_temp_c1[['Time','equix','equiy','b','imag_eval1']].iloc[-20:]
 
 T = df_temp_c1_stable['Time'].values + 1
 u_t = df_temp_c1_stable['equix'].values

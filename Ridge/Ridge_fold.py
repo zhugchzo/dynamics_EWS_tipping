@@ -67,15 +67,14 @@ x = np.zeros((dlin,length))
 for j in range(length):
     x[0:d,j]=x_tseries[j]
 
-predict_traj_x = list()
 estimate_rrate = list()
 best_initial_theta_list = list()
 best_delta_theta_list = list()
 
 W_out_matrix = np.zeros((test_length,dtot + cte))
 
-grid_initial_theta = [-2, -1, 0, 1, 2]
-grid_delta_theta = [1e-4, 5e-4, 1e-3, 5e-3, 1e-2]
+grid_initial_theta = [-1, 0, 1]
+grid_delta_theta = [5e-4, 1e-3, 5e-3]
 
 i = 0
 
@@ -114,14 +113,69 @@ for winstart in range(test_length):
                                 out_train[dlin + cnt + cte] = x[row1,winstart:winstart + train_length] * x[row2,winstart:winstart + train_length] * x[row3,winstart:winstart + train_length]
                                 cnt += 1
 
+            # compute the pseudo-inverse matrix error
+
+            pinv_error_matrix = np.linalg.pinv(out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte)) @ (out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte)) - np.identity(out_train.shape[0])
+            pinv_error = np.sum(pinv_error_matrix**2) / out_train.shape[0]**2
+
             # ridge regression: train W_out to map out_train to x[t+1] - x[t]
             W_out = (x[0:d,winstart + 1:winstart + train_length + 1] - x[0:d,winstart:winstart + train_length])/dt @ out_train[:,:].T @ np.linalg.pinv(out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte))
-            
-            # compute MSE
-            mse = np.sum(((x[0:d,winstart + 1:winstart + train_length + 1] - x[0:d,winstart:winstart + train_length])/dt - W_out[0] @ out_train[:,:])**2)
+
+#####################################################################################
+
+            # generation, compute MSE
+
+            # create a place to store feature vectors for prediction
+            out_gen = np.ones((dtot + cte))        # full feature vector
+            x_gen = np.zeros((dlin,train_length))      # linear part
+
+            x_gen[d:d+1,:] = np.linspace(initial_theta, initial_theta + (train_length - 1) * delta_theta, train_length)
+
+            # copy over initial linear feature vector
+            x_gen[:d,0] = x_tseries[winstart]
+
+            gen_traj = np.zeros((d,train_length))
+            gen_traj[:,0] = x_gen[0:d,0]
+
+            for j in range(train_length-1):
+
+                # copy linear part into whole feature vector
+                out_gen[cte:dlin + cte] = x_gen[:,j] # shift by one for constant
+
+                # fill in the non-linear part
+
+                cnt = 0
+                # 2-order
+                for row1 in range(dlin):
+                    if row1 < dlin-1:
+                        for row2 in range(row1,dlin):
+                            # shift by one for constant
+                            out_gen[dlin + cnt + cte] = x_gen[row1,j] * x_gen[row2,j]
+                            cnt += 1
+
+                # 3-order
+                for row1 in range(dlin):
+                    if row1 < dlin-1:
+                        for row2 in range(row1,dlin):
+                            if row2 < dlin-1:
+                                for row3 in range(row2,dlin):
+                                    # shift by one for constant
+                                    out_gen[dlin + cnt + cte] = x_gen[row1,j] * x_gen[row2,j] * x_gen[row3,j]
+                                    cnt += 1
+
+                # do a prediction
+                x_gen[0:d,j+1] = x_gen[0:d,j] + (W_out @ out_gen[:])*dt
+
+                gen_traj[:,j+1] = x_gen[0:d,j+1]
+
+            sums = np.sum((x_tseries[winstart : winstart+train_length] - gen_traj.T)**2)
+            mse = sums / train_length
 
             # compute AIC
-            AIC = train_length*np.log(mse) + 2*np.count_nonzero(W_out)
+            if np.log(mse) >= 0:
+                AIC = pinv_error*train_length*np.log(mse) + 2*np.count_nonzero(W_out)
+            else:
+                AIC = train_length*np.log(mse)/pinv_error + 2*np.count_nonzero(W_out)
 
             if np.isnan(AIC):
                 AIC = 1e5
@@ -181,13 +235,6 @@ for winstart in range(test_length):
     # the colunm of out_train_t is (cte, x, b, x^2, bx, x^3, bx^2).T
     out_train_t = out_train[:,-1]
 
-    delta_x = (W_out @ out_train_t)*dt
-    next_x = x[0:d,winstart + train_length - 1] + delta_x
-
-    next_x = next_x[0]
-
-    predict_traj_x.append(next_x)
-
     # estimating recovery rate
 
     x_t = out_train_t[1]
@@ -199,7 +246,7 @@ for winstart in range(test_length):
     i += 1
 
 dic_pred = {'Time':tseries[train_length - 1 : -1],'b_param':b_tseries[train_length - 1 : -1],'traj_x':x_tseries[train_length - 1 : -1], 'equi_x':equix_tseries[train_length - 1 : -1],
-            'next_x':x_tseries[train_length:],'pred_x':predict_traj_x,'rrate':rrate_tseries[train_length - 1 : -1],'esti_rrate':estimate_rrate, 'initial_theta':best_initial_theta_list, 'delta_theta':best_delta_theta_list}
+            'rrate':rrate_tseries[train_length - 1 : -1],'esti_rrate':estimate_rrate, 'initial_theta':best_initial_theta_list, 'delta_theta':best_delta_theta_list}
 
 polynomial = ['cte', 'x', 'b', 'x^2', 'bx', 'x^3', 'bx^2']
 for j in range(dtot + cte):

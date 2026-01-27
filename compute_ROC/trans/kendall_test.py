@@ -7,8 +7,8 @@ tau_null_list = list()
 
 for random_seed in range(100):
 
-    df = pd.read_csv('../../results/ROC/trans/ews/DIGEST_trans_{}.csv'.format(random_seed))
-    df_null = pd.read_csv('../../results/ROC/trans/ews/DIGEST_trans_null_{}.csv'.format(random_seed))
+    df = pd.read_csv('../../results/ROC/trans/ews/dynamics_trans_{}.csv'.format(random_seed))
+    df_null = pd.read_csv('../../results/ROC/trans/ews/dynamics_trans_null_{}.csv'.format(random_seed))
 
     t = df['Time'].to_numpy().reshape(-1)
     rrate = df['esti_rrate'].to_numpy().reshape(-1)
@@ -27,8 +27,8 @@ dic_tau_null = {'Count':count_list, 'tau':tau_null_list}
 csv_out = pd.DataFrame(dic_tau)
 csv_out_null = pd.DataFrame(dic_tau_null)
 
-csv_out.to_csv('../../results/ROC/trans/DIGEST_tau.csv',header = True)
-csv_out_null.to_csv('../../results/ROC/trans/DIGEST_tau_null.csv',header = True)
+csv_out.to_csv('../../results/ROC/trans/dynamics_tau.csv',header = True)
+csv_out_null.to_csv('../../results/ROC/trans/dynamics_tau_null.csv',header = True)
 
 ################################################################################################
 

@@ -119,7 +119,7 @@ ch = 0.9
 
 c_rate = 1.5e-5
 
-np.random.seed(1)
+np.random.seed(61)
 
 sim_len = int((ch-cl)*dt/c_rate)
 series_len = 1000
@@ -250,7 +250,7 @@ df_temp_c2 = df_temp_c2[cols]
 
 stable_list = []
 
-df_temp_c1_stable = df_temp_c1[['Time','equix','equiy','a','c','imag_eval1']].iloc[-30:]
+df_temp_c1_stable = df_temp_c1[['Time','equix','equiy','a','c','imag_eval1']].iloc[-20:]
 
 T = df_temp_c1_stable['Time'].values + 1
 u_t = df_temp_c1_stable['equix'].values

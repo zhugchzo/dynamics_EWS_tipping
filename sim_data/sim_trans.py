@@ -11,6 +11,7 @@ if not os.path.exists('../data/trans'):
 dt = 0.01
 t0 = 0
 tburn = 500 # burn-in period
+tburn1 = 1
 sigma_x = 0.0025 # noise intensity
 sigma_y = 0.0025
 
@@ -132,31 +133,45 @@ rrate_record = []
 
 # Run simulation
 for i in range(len(t)-1):
-    x[i+1] = x[i] + de_fun_x(x[i],y[i],g,k,a.iloc[i],h)*dt + dW_x[i]
-    y[i+1] = y[i] + de_fun_y(x[i],y[i],e,a.iloc[i],h,m)*dt + dW_y[i]
-    equix[i+1] = equix[i] + de_fun_x(equix[i],equiy[i],g,k,a.iloc[i],h)*dt
-    equiy[i+1] = equiy[i] + de_fun_y(equix[i],equiy[i],e,a.iloc[i],h,m)*dt
 
-    rrate[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[0]
-    imag_dom_eval[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[1]
-    real_oth_eval[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[2]
-    imag_oth_eval[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[3]
+    if len(rrate_record) == 0:
 
-    if rrate[i+1] == 1997.0209:
-        print('rrate Nan appears')
-        break
+        x[i+1] = x[i] + de_fun_x(x[i],y[i],g,k,a.iloc[i],h)*dt + dW_x[i]
+        y[i+1] = y[i] + de_fun_y(x[i],y[i],e,a.iloc[i],h,m)*dt + dW_y[i]
+        equix[i+1] = equix[i] + de_fun_x(equix[i],equiy[i],g,k,a.iloc[i],h)*dt
+        equiy[i+1] = equiy[i] + de_fun_y(equix[i],equiy[i],e,a.iloc[i],h,m)*dt
 
-    if math.isnan(x[i+1]) or math.isnan(y[i+1]):
-        print('sim Nan appears')
-        break
+        rrate[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[0]
+        imag_dom_eval[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[1]
+        real_oth_eval[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[2]
+        imag_oth_eval[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[3]
 
-    # Determine the tipping point by the recovery rate changing from negative to positive
-    if rrate[i] < 0 and rrate[i+1] > 0:
-        rrate_record.append(i+1)
+        if rrate[i+1] == 1997.0209:
+            print('rrate Nan appears')
+            # break
 
-    if x[i] > 2:
-        length = i
-        break
+        if math.isnan(x[i+1]) or math.isnan(y[i+1]):
+            print('sim Nan appears')
+            # break
+
+        # Determine the tipping point by the recovery rate changing from negative to positive
+        if rrate[i] < 0 and rrate[i+1] > 0:
+            rrate_record.append(i+1)
+
+    else:
+
+        if i == rrate_record[0]:
+
+            x[i+1] = 1.7
+            y[i+1] = 0.03
+
+            # x[i+1] = 1.6774932805929015
+            # y[i+1] = 0.022647546315126325
+        
+        else:
+            x[i+1] = x[i] + de_fun_x(x[i],y[i],g,k,a.iloc[i],h)*dt + dW_x[i]
+            y[i+1] = y[i] + de_fun_y(x[i],y[i],e,a.iloc[i],h,m)*dt + dW_y[i]
+
 
 if len(rrate_record) != 0:
 
@@ -167,7 +182,8 @@ if len(rrate_record) != 0:
 
     c2 = c1.copy()
 
-    c0 = np.linspace(trans_time,length,int((length-trans_time)*series_len/trans_time))
+    #c0 = np.linspace(trans_time,length,int((length-trans_time)*series_len/trans_time))
+    c0 = np.linspace(trans_time,len(t)-1,int((len(t)-1-trans_time)*series_len/trans_time))
     c0 = c0[1:]
     c0 = list(map(int,c0))
     c2.extend(c0)

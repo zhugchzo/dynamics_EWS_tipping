@@ -166,7 +166,7 @@ for random_seed in range(100):
         print('Cant find rrate = 0')
 
     # Store series data in a temporary DataFrame
-    data = {'t':t,'traj_x': x, 'traj_y': y,'equix': equix, 'equiy': equiy, 'a': a, 'c': c, 'esti_rrate': rrate}
+    data = {'t':t,'traj_x': x, 'traj_y': y,'equix': equix, 'equiy': equiy, 'a': a, 'c': c, 'real_eval1': rrate}
     data_null = {'t':t,'traj_x': x_null, 'traj_y': y_null}
     df_temp = pd.DataFrame(data)
     df_temp_null = pd.DataFrame(data_null)
