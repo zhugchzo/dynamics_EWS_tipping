@@ -4,9 +4,6 @@ import numpy as np
 import pandas as pd
 import os
 
-if not os.path.exists('../data/fold_ER/ROC'):
-    os.makedirs('../data/fold_ER/ROC')
-
 # Simulation parameters
 dt = 0.01
 t0 = 0
@@ -69,133 +66,136 @@ c_rate = 1e-5 # bifurcation parameter change rate
 sim_len = int((epslh-epsll)*dt/c_rate)
 series_len = 1000
 
-for random_seed in range(100):
+for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
-    np.random.seed(random_seed)
+    if not os.path.exists('../data/fold_ER/ROC/{}'.format(network_size)):
+        os.makedirs('../data/fold_ER/ROC/{}'.format(network_size))
 
-    # ER network
-    network_size = 20
-    link_p = 0.5
+    for random_seed in range(10):
 
-    g = nx.erdos_renyi_graph(n=network_size, p=link_p, directed=True, seed=int(random_seed))  # 使用示例参数生成网络
+        np.random.seed(random_seed)
 
-    N = len(g)
+        # ER network
+        link_p = 0.5
 
-    #generate weight adjacency matrix
-    A = nx.to_numpy_array(g)
-    A = A.T # out degree -> in degree
+        g = nx.erdos_renyi_graph(n=network_size, p=link_p, directed=True, seed=int(random_seed))  # 使用示例参数生成网络
 
-    network_A = A.copy()
+        N = len(g)
 
-    x0 = np.random.rand(N) * 1e-2  #init
-    equix0 = np.random.rand(N) * 1e-2  #init
+        #generate weight adjacency matrix
+        A = nx.to_numpy_array(g)
+        A = A.T # out degree -> in degree
 
-    t = np.arange(t0,sim_len,dt)
+        network_A = A.copy()
 
-    x = np.zeros((N,len(t)))
-    x_null = np.zeros((N,len(t)))
-    equix = np.zeros((N,len(t)))
+        x0 = np.random.rand(N) * 1e-2  #init
+        equix0 = np.random.rand(N) * 1e-2  #init
 
-    rrate = np.zeros(len(t))
+        t = np.arange(t0,sim_len,dt)
 
-    epsl = pd.Series(np.linspace(epsll,epslh,len(t)),index=t)
+        x = np.zeros((N,len(t)))
+        x_null = np.zeros((N,len(t)))
+        equix = np.zeros((N,len(t)))
 
-    # Create brownian increments (s.d. sqrt(dt))
-    dW_burn = np.random.normal(loc=0, scale=sigma*np.sqrt(dt), size = (N,int(tburn/dt)))
-    dW = np.random.normal(loc=0, scale=sigma*np.sqrt(dt), size = (N,len(t)))
+        rrate = np.zeros(len(t))
 
-    # Run burn-in period on x0
-    for i in range(int(tburn/dt)):
+        epsl = pd.Series(np.linspace(epsll,epslh,len(t)),index=t)
 
-        x0 = x0 + de_fun(x0, epsl[0], A, N, B, K, C, D, E, H)*dt + dW_burn[:,i]
-        equix0 = equix0 + de_fun(equix0, epsl[0], A, N, B, K, C, D, E, H)*dt
+        # Create brownian increments (s.d. sqrt(dt))
+        dW_burn = np.random.normal(loc=0, scale=sigma*np.sqrt(dt), size = (N,int(tburn/dt)))
+        dW = np.random.normal(loc=0, scale=sigma*np.sqrt(dt), size = (N,len(t)))
 
-    rrate0 = recov_fun(equix0, epsl[0], A, N, K, C, D, E, H)[0]
+        # Run burn-in period on x0
+        for i in range(int(tburn/dt)):
 
-    if rrate0 == 1997.0209 or np.any(np.isnan(x0)):
-        print('Nan appears')
-    
-    # Initial condition post burn-in period
-    x[:,0] = x0
-    x_null[:,0] = x0
-    equix[:,0] = equix0
+            x0 = x0 + de_fun(x0, epsl[0], A, N, B, K, C, D, E, H)*dt + dW_burn[:,i]
+            equix0 = equix0 + de_fun(equix0, epsl[0], A, N, B, K, C, D, E, H)*dt
 
-    rrate[0] = rrate0
+        rrate0 = recov_fun(equix0, epsl[0], A, N, K, C, D, E, H)[0]
 
-    rrate_record = []
+        if rrate0 == 1997.0209 or np.any(np.isnan(x0)):
+            print('Nan appears')
+        
+        # Initial condition post burn-in period
+        x[:,0] = x0
+        x_null[:,0] = x0
+        equix[:,0] = equix0
 
-    # Run simulation
-    for i in range(len(t)-1):
+        rrate[0] = rrate0
 
-        x[:,i+1] = x[:,i] + de_fun(x[:,i], epsl.iloc[i], A, N, B, K, C, D, E, H)*dt + dW[:,i]
-        x_null[:,i+1] = x_null[:,i] + de_fun(x_null[:,i], epsl.iloc[0], A, N, B, K, C, D, E, H)*dt + dW[:,i]
-        equix[:,i+1] = equix[:,i] + de_fun(equix[:,i], epsl.iloc[i], A, N, B, K, C, D, E, H)*dt
+        rrate_record = []
 
-        x[:, i+1] = np.clip(x[:,i+1], 0, None)
-        x_null[:, i+1] = np.clip(x_null[:,i+1], 0, None)
-        equix[:, i+1] = np.clip(equix[:,i+1], 0, None)
+        # Run simulation
+        for i in range(len(t)-1):
 
-        rrate[i+1] = recov_fun(equix[:,i+1], epsl.iloc[i+1], A, N, K, C, D, E, H)[0]
+            x[:,i+1] = x[:,i] + de_fun(x[:,i], epsl.iloc[i], A, N, B, K, C, D, E, H)*dt + dW[:,i]
+            x_null[:,i+1] = x_null[:,i] + de_fun(x_null[:,i], epsl.iloc[0], A, N, B, K, C, D, E, H)*dt + dW[:,i]
+            equix[:,i+1] = equix[:,i] + de_fun(equix[:,i], epsl.iloc[i], A, N, B, K, C, D, E, H)*dt
 
-        if rrate[i+1] == 1997.0209:
-            print('rrate Nan appears')
+            x[:, i+1] = np.clip(x[:,i+1], 0, None)
+            x_null[:, i+1] = np.clip(x_null[:,i+1], 0, None)
+            equix[:, i+1] = np.clip(equix[:,i+1], 0, None)
 
-        if np.any(np.isnan(x[:,i+1])):
-            print('sim Nan appears')
+            rrate[i+1] = recov_fun(equix[:,i+1], epsl.iloc[i+1], A, N, K, C, D, E, H)[0]
 
-        # Determine the tipping point by the recovery rate changing from negative to positive
-        if rrate[i] < 0 and rrate[i+1] > 0:
-            rrate_record.append(i+1)
+            if rrate[i+1] == 1997.0209:
+                print('rrate Nan appears')
 
-    if len(rrate_record) != 0:
+            if np.any(np.isnan(x[:,i+1])):
+                print('sim Nan appears')
 
-        trans_time = rrate_record[0] # the time of tipping point
+            # Determine the tipping point by the recovery rate changing from negative to positive
+            if rrate[i] < 0 and rrate[i+1] > 0:
+                rrate_record.append(i+1)
 
-        c= np.linspace(0,trans_time,series_len)
-        c = list(map(int,c))
+        if len(rrate_record) != 0:
 
-        # Store series data in a temporary DataFrame
-        data = {'t':t,'epsl':epsl,'real_eval1': rrate}
-        data_null = {'t':t}
+            trans_time = rrate_record[0] # the time of tipping point
 
-        for node in range(N):
-            data['traj_x{}'.format(node)] = x[node,:]
-            data['equix{}'.format(node)] = equix[node,:]
+            c= np.linspace(0,trans_time,series_len)
+            c = list(map(int,c))
 
-            data_null['traj_x{}'.format(node)] = x_null[node,:]
+            # Store series data in a temporary DataFrame
+            data = {'t':t,'epsl':epsl,'real_eval1': rrate}
+            data_null = {'t':t}
 
-        df_temp = pd.DataFrame(data)
-        df_temp_null = pd.DataFrame(data_null)
+            for node in range(N):
+                data['traj_x{}'.format(node)] = x[node,:]
+                data['equix{}'.format(node)] = equix[node,:]
 
-        df_temp_c = df_temp.iloc[c].copy()
-        df_temp_null_c = df_temp_null.iloc[c].copy()
+                data_null['traj_x{}'.format(node)] = x_null[node,:]
 
-        df_temp_c['Time'] = range(len(df_temp_c))
-        df_temp_null_c['Time'] = range(len(df_temp_null_c))
+            df_temp = pd.DataFrame(data)
+            df_temp_null = pd.DataFrame(data_null)
 
-        df_temp_c['t_diff'] = df_temp_c['t'].diff()
-        df_temp_null_c['t_diff'] = df_temp_null_c['t'].diff()
+            df_temp_c = df_temp.iloc[c].copy()
+            df_temp_null_c = df_temp_null.iloc[c].copy()
 
-        cols = ['Time'] + [col for col in df_temp_c.columns if col != 'Time']
-        cols_null = ['Time'] + [col for col in df_temp_null_c.columns if col != 'Time']
+            df_temp_c['Time'] = range(len(df_temp_c))
+            df_temp_null_c['Time'] = range(len(df_temp_null_c))
 
-        df_temp_c = df_temp_c[cols]
-        df_temp_null_c = df_temp_null_c[cols_null]
+            df_temp_c['t_diff'] = df_temp_c['t'].diff()
+            df_temp_null_c['t_diff'] = df_temp_null_c['t'].diff()
 
-        print('Simulation {} complete'.format(random_seed))
+            cols = ['Time'] + [col for col in df_temp_c.columns if col != 'Time']
+            cols_null = ['Time'] + [col for col in df_temp_null_c.columns if col != 'Time']
 
-        #------------------------------------
-        # Export data 
-        #-----------------------------------
+            df_temp_c = df_temp_c[cols]
+            df_temp_null_c = df_temp_null_c[cols_null]
 
-        filepath = '../data/fold_ER/ROC/fold_ER_{}.csv'.format(random_seed)
-        filepath_null = '../data/fold_ER/ROC/fold_ER_null_{}.csv'.format(random_seed)
+            print('Network size = {}, Simulation {} complete'.format(network_size,random_seed))
 
-        df_temp_c.to_csv(filepath,index=False)
-        df_temp_null_c.to_csv(filepath_null,index=False)
+            #------------------------------------
+            # Export data 
+            #-----------------------------------
 
-        np.savetxt('../data/fold_ER/ROC/network_{}.csv'.format(random_seed), network_A, delimiter=',', fmt='%.3f')
+            filepath = '../data/fold_ER/ROC/{}/fold_ER_{}.csv'.format(network_size,random_seed)
+            filepath_null = '../data/fold_ER/ROC/{}/fold_ER_null_{}.csv'.format(network_size,random_seed)
 
-    else:
-        print('Cant find rrate = 0')
+            df_temp_c.to_csv(filepath,index=False)
+            df_temp_null_c.to_csv(filepath_null,index=False)
 
+            np.savetxt('../data/fold_ER/ROC/{}/network_{}.csv'.format(network_size,random_seed), network_A, delimiter=',', fmt='%.3f')
+
+        else:
+            print('Cant find rrate = 0')

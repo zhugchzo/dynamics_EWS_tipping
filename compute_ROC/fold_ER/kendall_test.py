@@ -6,21 +6,27 @@ count_list = list()
 tau_list = list()
 tau_null_list = list()
 
-for random_seed in range(100):
+count = 0
 
-    df = pd.read_csv('../../results/ROC/fold_ER/ews/dynamics_fold_ER_{}.csv'.format(random_seed))
-    df_null = pd.read_csv('../../results/ROC/fold_ER/ews/dynamics_fold_ER_null_{}.csv'.format(random_seed))
+for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
-    t = df['Time'].to_numpy().reshape(-1)
-    rrate = df['esti_rrate'].to_numpy().reshape(-1)
-    rrate_null = df_null['esti_rrate'].to_numpy().reshape(-1)
+    for random_seed in range(10):
 
-    tau, p_value = kendalltau(t, rrate)
-    tau_null, p_value_null = kendalltau(t, rrate_null)
+        df = pd.read_csv('../../results/ROC/fold_ER/ews/{}/dynamics_fold_ER_{}.csv'.format(network_size,random_seed))
+        df_null = pd.read_csv('../../results/ROC/fold_ER/ews/{}/dynamics_fold_ER_null_{}.csv'.format(network_size,random_seed))
 
-    count_list.append(random_seed)
-    tau_list.append(tau)
-    tau_null_list.append(tau_null)
+        t = df['Time'].to_numpy().reshape(-1)
+        rrate = df['esti_rrate'].to_numpy().reshape(-1)
+        rrate_null = df_null['esti_rrate'].to_numpy().reshape(-1)
+
+        tau, p_value = kendalltau(t, rrate)
+        tau_null, p_value_null = kendalltau(t, rrate_null)
+
+        count_list.append(count)
+        tau_list.append(tau)
+        tau_null_list.append(tau_null)
+
+        count += 1
 
 dic_tau = {'Count':count_list, 'tau':tau_list}
 dic_tau_null = {'Count':count_list, 'tau':tau_null_list}
@@ -37,21 +43,27 @@ count_list = list()
 tau_list = list()
 tau_null_list = list()
 
-for random_seed in range(100):
+count = 0
 
-    df = pd.read_csv('../../results/ROC/fold_ER/ews/lag-1_fold_ER_{}.csv'.format(random_seed))
-    df_null = pd.read_csv('../../results/ROC/fold_ER/ews/lag-1_fold_ER_null_{}.csv'.format(random_seed))
+for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
-    t = df['Time'].to_numpy().reshape(-1)
-    ac = df['Lag-1 AC'].to_numpy().reshape(-1)
-    ac_null = df_null['Lag-1 AC'].to_numpy().reshape(-1)
+    for random_seed in range(10):
 
-    tau, p_value = kendalltau(t, ac)
-    tau_null, p_value_null = kendalltau(t, ac_null)
+        df = pd.read_csv('../../results/ROC/fold_ER/ews/{}/lag-1_fold_ER_{}.csv'.format(network_size,random_seed))
+        df_null = pd.read_csv('../../results/ROC/fold_ER/ews/{}/lag-1_fold_ER_null_{}.csv'.format(network_size,random_seed))
 
-    count_list.append(random_seed)
-    tau_list.append(tau)
-    tau_null_list.append(tau_null)
+        t = df['Time'].to_numpy().reshape(-1)
+        ac = df['Lag-1 AC'].to_numpy().reshape(-1)
+        ac_null = df_null['Lag-1 AC'].to_numpy().reshape(-1)
+
+        tau, p_value = kendalltau(t, ac)
+        tau_null, p_value_null = kendalltau(t, ac_null)
+
+        count_list.append(count)
+        tau_list.append(tau)
+        tau_null_list.append(tau_null)
+
+        count += 1
 
 dic_tau = {'Count':count_list, 'tau':tau_list}
 dic_tau_null = {'Count':count_list, 'tau':tau_null_list}
@@ -68,21 +80,27 @@ count_list = list()
 tau_list = list()
 tau_null_list = list()
 
-for random_seed in range(100):
+count = 0
 
-    df = pd.read_csv('../../results/ROC/fold_ER/ews/DEV_fold_ER_{}.csv'.format(random_seed))
-    df_null = pd.read_csv('../../results/ROC/fold_ER/ews/DEV_fold_ER_null_{}.csv'.format(random_seed))
+for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
-    t = df['Time'].to_numpy().reshape(-1)
-    DEV = df['DEV'].to_numpy().reshape(-1)
-    DEV_null = df_null['DEV'].to_numpy().reshape(-1)
+    for random_seed in range(10):
 
-    tau, p_value = kendalltau(t, DEV)
-    tau_null, p_value_null = kendalltau(t, DEV_null)
+        df = pd.read_csv('../../results/ROC/fold_ER/ews/{}/DEV_fold_ER_{}.csv'.format(network_size,random_seed))
+        df_null = pd.read_csv('../../results/ROC/fold_ER/ews/{}/DEV_fold_ER_null_{}.csv'.format(network_size,random_seed))
 
-    count_list.append(random_seed)
-    tau_list.append(tau)
-    tau_null_list.append(tau_null)
+        t = df['Time'].to_numpy().reshape(-1)
+        DEV = df['DEV'].to_numpy().reshape(-1)
+        DEV_null = df_null['DEV'].to_numpy().reshape(-1)
+
+        tau, p_value = kendalltau(t, DEV)
+        tau_null, p_value_null = kendalltau(t, DEV_null)
+
+        count_list.append(count)
+        tau_list.append(tau)
+        tau_null_list.append(tau_null)
+
+        count += 1
 
 dic_tau = {'Count':count_list, 'tau':tau_list}
 dic_tau_null = {'Count':count_list, 'tau':tau_null_list}

@@ -33,101 +33,105 @@ def smap(X, Y, theta=0.5):
 
 length = 1000
 
-train_length = 850 # Length of the rolling window
+train_length = 700 # Length of the rolling window
 test_length = length - train_length
 
-for random_seed in range(100):
+for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
-    df_tseries = pd.read_csv('../../data/fold_BA/ROC/fold_BA_{}.csv'.format(random_seed))
-    df_network = pd.read_csv('../../data/fold_BA/ROC/network_{}.csv'.format(random_seed), header=None)
+    for random_seed in range(10):
 
-    N = len(df_network)
+        df_tseries = pd.read_csv('../../data/fold_BA/ROC/{}/fold_BA_{}.csv'.format(network_size,random_seed))
+        df_network = pd.read_csv('../../data/fold_BA/ROC/{}/network_{}.csv'.format(network_size,random_seed), header=None)
 
-    keep_col_tseries = ['Time']
+        N = len(df_network)
 
-    for node in range(N):
-        keep_col_tseries.append('traj_x{}'.format(node))
-
-    new_f_tseries = df_tseries[keep_col_tseries]
-    values_tseries = new_f_tseries.values
-
-    tseries = np.array(values_tseries[:,0])
-    x_tseries = np.array(values_tseries[:,-N:])
-
-    DEV_list = list()
-    imag_list = list()
-
-    for winstart in range(0,test_length,5):
-
-        Y_t = x_tseries[winstart : winstart + train_length]
-        Y_tp = x_tseries[winstart + 1 : winstart + 1 + train_length]
-
-        Jaco_matrix = np.zeros((N,N))
+        keep_col_tseries = ['Time']
 
         for node in range(N):
+            keep_col_tseries.append('traj_x{}'.format(node))
 
-            J_i = smap(Y_t,Y_tp[:,node])
+        new_f_tseries = df_tseries[keep_col_tseries]
+        values_tseries = new_f_tseries.values
 
-            Jaco_matrix[node,:] = J_i
+        tseries = np.array(values_tseries[:,0])
+        x_tseries = np.array(values_tseries[:,-N:])
 
-        eigenvalues = np.linalg.eigvals(Jaco_matrix)
+        DEV_list = list()
+        imag_list = list()
 
-        idx = np.argmax(np.abs(eigenvalues))
-        lam = eigenvalues[idx]
+        for winstart in range(0,test_length,20):
 
-        DEV = np.abs(lam)
-        Im = lam.imag  
+            Y_t = x_tseries[winstart : winstart + train_length]
+            Y_tp = x_tseries[winstart + 1 : winstart + 1 + train_length]
 
-        DEV_list.append(DEV)
-        imag_list.append(Im)
+            Jaco_matrix = np.zeros((N,N))
 
-    dic_DEV = {'Time':tseries[train_length - 1 : -1][::5],'DEV':DEV_list,'imag':imag_list}
+            for node in range(N):
 
-    csv_out = pd.DataFrame(dic_DEV)
-    csv_out.to_csv('../../results/ROC/fold_BA/ews/DEV_fold_BA_{}.csv'.format(random_seed),header = True)
+                J_i = smap(Y_t,Y_tp[:,node])
+
+                Jaco_matrix[node,:] = J_i
+
+            eigenvalues = np.linalg.eigvals(Jaco_matrix)
+
+            idx = np.argmax(np.abs(eigenvalues))
+            lam = eigenvalues[idx]
+
+            DEV = np.abs(lam)
+            Im = lam.imag  
+
+            DEV_list.append(DEV)
+            imag_list.append(Im)
+
+        dic_DEV = {'Time':tseries[train_length - 1 : -1][::20],'DEV':DEV_list,'imag':imag_list}
+
+        csv_out = pd.DataFrame(dic_DEV)
+        csv_out.to_csv('../../results/ROC/fold_BA/ews/{}/DEV_fold_BA_{}.csv'.format(network_size,random_seed),header = True)
 
 ################################################################################################
 
-for random_seed in range(100):
+for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
-    df_tseries = pd.read_csv('../../data/fold_BA/ROC/fold_BA_null_{}.csv'.format(random_seed))
-    df_network = pd.read_csv('../../data/fold_BA/ROC/network_{}.csv'.format(random_seed), header=None)
+    for random_seed in range(10):
 
-    N = len(df_network)
+        df_tseries = pd.read_csv('../../data/fold_BA/ROC/{}/fold_BA_null_{}.csv'.format(network_size,random_seed))
+        df_network = pd.read_csv('../../data/fold_BA/ROC/{}/network_{}.csv'.format(network_size,random_seed), header=None)
 
-    keep_col_tseries = ['Time']
+        N = len(df_network)
 
-    for node in range(N):
-        keep_col_tseries.append('traj_x{}'.format(node))
-
-    new_f_tseries = df_tseries[keep_col_tseries]
-    values_tseries = new_f_tseries.values
-
-    tseries = np.array(values_tseries[:,0])
-    x_tseries = np.array(values_tseries[:,-N:])
-
-    DEV_list = list()
-
-    for winstart in range(0,test_length,5):
-
-        Y_t = x_tseries[winstart : winstart + train_length]
-        Y_tp = x_tseries[winstart + 1 : winstart + 1 + train_length]
-
-        Jaco_matrix = np.zeros((N,N))
+        keep_col_tseries = ['Time']
 
         for node in range(N):
+            keep_col_tseries.append('traj_x{}'.format(node))
 
-            J_i = smap(Y_t,Y_tp[:,node])
+        new_f_tseries = df_tseries[keep_col_tseries]
+        values_tseries = new_f_tseries.values
 
-            Jaco_matrix[node,:] = J_i
+        tseries = np.array(values_tseries[:,0])
+        x_tseries = np.array(values_tseries[:,-N:])
 
-        eigenvalues = np.linalg.eigvals(Jaco_matrix)
+        DEV_list = list()
 
-        DEV = np.max(np.abs(eigenvalues))
+        for winstart in range(0,test_length,20):
 
-        DEV_list.append(DEV)
+            Y_t = x_tseries[winstart : winstart + train_length]
+            Y_tp = x_tseries[winstart + 1 : winstart + 1 + train_length]
 
-    dic_DEV = {'Time':tseries[train_length - 1 : -1][::5],'DEV':DEV_list}
+            Jaco_matrix = np.zeros((N,N))
 
-    csv_out = pd.DataFrame(dic_DEV)
-    csv_out.to_csv('../../results/ROC/fold_BA/ews/DEV_fold_BA_null_{}.csv'.format(random_seed),header = True)
+            for node in range(N):
+
+                J_i = smap(Y_t,Y_tp[:,node])
+
+                Jaco_matrix[node,:] = J_i
+
+            eigenvalues = np.linalg.eigvals(Jaco_matrix)
+
+            DEV = np.max(np.abs(eigenvalues))
+
+            DEV_list.append(DEV)
+
+        dic_DEV = {'Time':tseries[train_length - 1 : -1][::20],'DEV':DEV_list}
+
+        csv_out = pd.DataFrame(dic_DEV)
+        csv_out.to_csv('../../results/ROC/fold_BA/ews/{}/DEV_fold_BA_null_{}.csv'.format(network_size,random_seed),header = True)

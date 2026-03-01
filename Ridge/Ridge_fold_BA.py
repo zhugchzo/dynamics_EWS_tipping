@@ -95,6 +95,8 @@ estimate_imag_oth_eval = list()
 best_initial_theta_list = list()
 best_delta_theta_list = list()
 
+W_out_matrix = np.zeros((test_length,dtot + cte))
+
 grid_initial_theta = [-1, 0, 1]
 grid_delta_theta = [5e-4, 1e-3, 5e-3]
 
@@ -312,7 +314,9 @@ for winstart in range(test_length):
 
     # ridge regression: train W_out to map out_train to x[t+1] - x[t]
     W_out = fx_t @ out_train[:,:].T @ np.linalg.pinv(out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte))
-    
+
+    W_out_matrix[i,:] = W_out
+
     for node in range(N):
 
         # estimating recovery rate
@@ -327,10 +331,7 @@ for winstart in range(test_length):
             else:
                 jacobian[node,j] = diff_f(W_out[:dlin + dnonlin + cte], x_t, b_t) + W_out[-1]*sum_y_t
 
-    rrate = solve_eval(jacobian)[0]
-    imag_dom_eval = solve_eval(jacobian)[1]
-    real_oth_eval = solve_eval(jacobian)[2]
-    imag_oth_eval = solve_eval(jacobian)[3]
+    rrate, imag_dom_eval, real_oth_eval, imag_oth_eval = solve_eval(jacobian)
 
     estimate_rrate.append(rrate)
     estimate_imag_dom_eval.append(imag_dom_eval)
@@ -339,10 +340,14 @@ for winstart in range(test_length):
 
     i += 1
 
-dic_pred = {'Time':tseries[train_length - 1 : -1],'b':b_tseries[train_length - 1 : -1],'traj_x':x_mean[train_length - 1 : -1],
+dic_pred = {'Time':tseries[train_length - 1 : -1],'b_param':b_tseries[train_length - 1 : -1],'traj_x':x_mean[train_length - 1 : -1],
             'real_eval':rrate_tseries[train_length - 1 : -1],'esti_real_eval1':estimate_rrate, 'esti_real_eval2':estimate_real_oth_eval,
             'imag_eval':imag_tseries[train_length - 1 : -1],'esti_imag_eval1':estimate_imag_dom_eval, 'esti_imag_eval2':estimate_imag_oth_eval,
             'initial_theta':best_initial_theta_list, 'delta_theta':best_delta_theta_list}
+
+polynomial = ['cte', 'x', 'b', 'x^2', 'bx', 'x^3', 'bx^2', 'x_j', 'bx_j', 'x_ix_j']
+for j in range(dtot + cte):
+    dic_pred[polynomial[j]] = W_out_matrix[:,j]
 
 csv_out = pd.DataFrame(dic_pred)
 csv_out.to_csv('../results/fold_BA/fold_BA.csv', header = True)

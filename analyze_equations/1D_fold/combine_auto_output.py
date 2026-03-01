@@ -47,4 +47,3 @@ for ii in numbers:
 dic_bif = {'Time':time, 'bif_type':bif_type_list, 'bif_value':bif_value_list}
 csv_out = pd.DataFrame(dic_bif)
 csv_out.to_csv('../../results/fold/auto_output.csv',header = True)
-

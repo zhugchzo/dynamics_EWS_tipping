@@ -16,13 +16,13 @@ ol_w = float(ol_page.mediabox.width)
 ol_h = float(ol_page.mediabox.height)
 
 # 1) 固定缩小比例（比如 50%）
-scale = 1.2
+scale = 2
 
 ol_w_s = ol_w * scale
 ol_h_s = ol_h * scale
 
 # a location
-a_rel_x, a_rel_y = 0, 0.05  # 相对位置
+a_rel_x, a_rel_y = 0.02, 0.15  # 相对位置
 a_x = bg_w * a_rel_x          # 背景宽度 * 相对比例
 a_y = bg_h * a_rel_y          # 背景高度 * 相对比例
 
@@ -37,5 +37,3 @@ writer = PdfWriter()
 writer.add_page(bg_page)
 with open('../figures/FIG4.pdf', 'wb') as f:
     writer.write(f)
-
-

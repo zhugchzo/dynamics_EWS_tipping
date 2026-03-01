@@ -9,87 +9,91 @@ if not os.path.exists('../../results/ROC/fold_BA/ews'):
 
 length = 1000
 
-train_length = 850 # Length of the rolling window
+train_length = 700 # Length of the rolling window
 test_length = length - train_length
 
-for random_seed in range(100):
+for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
-    df_tseries = pd.read_csv('../../data/fold_BA/ROC/fold_BA_{}.csv'.format(random_seed))
-    df_network = pd.read_csv('../../data/fold_BA/ROC/network_{}.csv'.format(random_seed), header=None)
+    for random_seed in range(10):
 
-    N = len(df_network)
+        df_tseries = pd.read_csv('../../data/fold_BA/ROC/{}/fold_BA_{}.csv'.format(network_size,random_seed))
+        df_network = pd.read_csv('../../data/fold_BA/ROC/{}/network_{}.csv'.format(network_size,random_seed), header=None)
 
-    keep_col_tseries = ['Time']
+        N = len(df_network)
 
-    for node in range(N):
-        keep_col_tseries.append('traj_x{}'.format(node))
+        keep_col_tseries = ['Time']
 
-    new_f_tseries = df_tseries[keep_col_tseries]
-    values_tseries = new_f_tseries.values
+        for node in range(N):
+            keep_col_tseries.append('traj_x{}'.format(node))
 
-    tseries = np.array(values_tseries[:,0])
-    x_tseries = np.array(values_tseries[:,-N:])
+        new_f_tseries = df_tseries[keep_col_tseries]
+        values_tseries = new_f_tseries.values
 
-    pca = PCA(n_components=1)
-    pc_tseries = pca.fit_transform(x_tseries).reshape(-1)
+        tseries = np.array(values_tseries[:,0])
+        x_tseries = np.array(values_tseries[:,-N:])
 
-    ac_list = list()
+        pca = PCA(n_components=1)
+        pc_tseries = pca.fit_transform(x_tseries).reshape(-1)
 
-    for winstart in range(test_length):
+        ac_list = list()
 
-        Y_t = pc_tseries[winstart : winstart + train_length].reshape(-1, 1)
-        Y_tp = pc_tseries[winstart + 1 : winstart + 1 + train_length]
+        for winstart in range(test_length):
 
-        model = LinearRegression()
-        model.fit(Y_t, Y_tp)
+            Y_t = pc_tseries[winstart : winstart + train_length].reshape(-1, 1)
+            Y_tp = pc_tseries[winstart + 1 : winstart + 1 + train_length]
 
-        ac = model.coef_[0]
+            model = LinearRegression()
+            model.fit(Y_t, Y_tp)
 
-        ac_list.append(ac)
+            ac = model.coef_[0]
 
-    dic_ac = {'Time':tseries[train_length - 1 : -1],'Lag-1 AC':ac_list}
+            ac_list.append(ac)
 
-    csv_out = pd.DataFrame(dic_ac)
-    csv_out.to_csv('../../results/ROC/fold_BA/ews/lag-1_fold_BA_{}.csv'.format(random_seed),header = True)
+        dic_ac = {'Time':tseries[train_length - 1 : -1],'Lag-1 AC':ac_list}
 
-################################################################################################
+        csv_out = pd.DataFrame(dic_ac)
+        csv_out.to_csv('../../results/ROC/fold_BA/ews/{}/lag-1_fold_BA_{}.csv'.format(network_size,random_seed),header = True)
 
-for random_seed in range(100):
+    ################################################################################################
 
-    df_tseries = pd.read_csv('../../data/fold_BA/ROC/fold_BA_null_{}.csv'.format(random_seed))
-    df_network = pd.read_csv('../../data/fold_BA/ROC/network_{}.csv'.format(random_seed), header=None)
+for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
-    N = len(df_network)
+    for random_seed in range(10):
 
-    keep_col_tseries = ['Time']
+        df_tseries = pd.read_csv('../../data/fold_BA/ROC/{}/fold_BA_null_{}.csv'.format(network_size,random_seed))
+        df_network = pd.read_csv('../../data/fold_BA/ROC/{}/network_{}.csv'.format(network_size,random_seed), header=None)
 
-    for node in range(N):
-        keep_col_tseries.append('traj_x{}'.format(node))
+        N = len(df_network)
 
-    new_f_tseries = df_tseries[keep_col_tseries]
-    values_tseries = new_f_tseries.values
+        keep_col_tseries = ['Time']
 
-    tseries = np.array(values_tseries[:,0])
-    x_tseries = np.array(values_tseries[:,-N:])
+        for node in range(N):
+            keep_col_tseries.append('traj_x{}'.format(node))
 
-    pca = PCA(n_components=1)
-    pc_tseries = pca.fit_transform(x_tseries).reshape(-1)
+        new_f_tseries = df_tseries[keep_col_tseries]
+        values_tseries = new_f_tseries.values
 
-    ac_list = list()
+        tseries = np.array(values_tseries[:,0])
+        x_tseries = np.array(values_tseries[:,-N:])
 
-    for winstart in range(test_length):
+        pca = PCA(n_components=1)
+        pc_tseries = pca.fit_transform(x_tseries).reshape(-1)
 
-        Y_t = pc_tseries[winstart : winstart + train_length].reshape(-1, 1)
-        Y_tp = pc_tseries[winstart + 1 : winstart + 1 + train_length]
+        ac_list = list()
 
-        model = LinearRegression()
-        model.fit(Y_t, Y_tp)
+        for winstart in range(test_length):
 
-        ac = model.coef_[0]
+            Y_t = pc_tseries[winstart : winstart + train_length].reshape(-1, 1)
+            Y_tp = pc_tseries[winstart + 1 : winstart + 1 + train_length]
 
-        ac_list.append(ac)
+            model = LinearRegression()
+            model.fit(Y_t, Y_tp)
 
-    dic_ac = {'Time':tseries[train_length - 1 : -1],'Lag-1 AC':ac_list}
+            ac = model.coef_[0]
 
-    csv_out = pd.DataFrame(dic_ac)
-    csv_out.to_csv('../../results/ROC/fold_BA/ews/lag-1_fold_BA_null_{}.csv'.format(random_seed),header = True)
+            ac_list.append(ac)
+
+        dic_ac = {'Time':tseries[train_length - 1 : -1],'Lag-1 AC':ac_list}
+
+        csv_out = pd.DataFrame(dic_ac)
+        csv_out.to_csv('../../results/ROC/fold_BA/ews/{}/lag-1_fold_BA_null_{}.csv'.format(network_size,random_seed),header = True)
