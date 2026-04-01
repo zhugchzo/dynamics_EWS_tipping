@@ -97,7 +97,7 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
     if not os.path.exists('../data/fold_BA/ROC/{}'.format(network_size)):
         os.makedirs('../data/fold_BA/ROC/{}'.format(network_size))
 
-    for random_seed in range(10):
+    for random_seed in range(20):
 
         np.random.seed(random_seed)
 

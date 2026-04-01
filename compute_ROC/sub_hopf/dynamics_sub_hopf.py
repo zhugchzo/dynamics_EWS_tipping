@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import os
 from sympy import symbols, diff
+import math
 
 if not os.path.exists('../../results/ROC/sub_hopf/ews'):
     os.makedirs('../../results/ROC/sub_hopf/ews')
@@ -106,7 +107,7 @@ length = 1000
 train_length = 500 # Length of the rolling window
 test_length = length - train_length
 
-stable_length = 30
+stable_length = 50
 
 # choose cte = 1 to include constant term, cte = 0 to exclude it
 cte = 1
@@ -124,15 +125,16 @@ dtot = dlin + dnonlin
 # ridge parameter for regression
 ridge_param = 1e-5
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df_tseries = pd.read_csv('../../data/sub_hopf/ROC/sub_hopf_{}.csv'.format(random_seed))
-    keep_col_tseries = ['traj_x','traj_y','Time','t_diff']
+    keep_col_tseries = ['traj_x','traj_y','Time','a','c','t_diff']
     new_f_tseries = df_tseries[keep_col_tseries]
     values_tseries = new_f_tseries.values
 
     x_tseries = np.array(values_tseries[:,:2])
     tseries = np.array(values_tseries[:,2])
+    b_tseries = np.array(values_tseries[:,3:5])
 
     dt = values_tseries[1,-1]
 
@@ -153,6 +155,9 @@ for random_seed in range(100):
     estimate_imag_oth_eval = list()
 
     estimate_stable = list()
+
+    best_initial_theta_list = list()
+    best_delta_theta_list = list()
 
     W_out_matrix_x = np.zeros((test_length,dtot + cte))
     W_out_matrix_y = np.zeros((test_length,dtot + cte))
@@ -280,6 +285,9 @@ for random_seed in range(100):
         best_initial_theta = float(best_initial_theta)
         best_delta_theta = float(best_delta_theta)
 
+        best_initial_theta_list.append(best_initial_theta)
+        best_delta_theta_list.append(best_delta_theta)
+
         # create an array to hold the full feature vector for training time
         # (use ones so the constant term is already 1)
         out_train = np.ones((dtot + cte,train_length))  
@@ -328,10 +336,7 @@ for random_seed in range(100):
 
         jacobian = np.array([[dfx_dx,dfx_dy],[dfy_dx,dfy_dy]], dtype=float)
 
-        rrate = solve_eval(jacobian)[0]
-        imag_dom_eval = solve_eval(jacobian)[1]
-        real_oth_eval = solve_eval(jacobian)[2]
-        imag_oth_eval = solve_eval(jacobian)[3]
+        rrate, imag_dom_eval, real_oth_eval, imag_oth_eval = solve_eval(jacobian)
 
         estimate_rrate.append(rrate)
         estimate_imag_dom_eval.append(imag_dom_eval)
@@ -346,8 +351,18 @@ for random_seed in range(100):
 
         i += 1
 
-    dic_pred = {'Time':tseries[train_length - 1 : -1],'esti_rrate':estimate_rrate, 'esti_real_eval2':estimate_real_oth_eval
-                ,'esti_imag_eval1':estimate_imag_dom_eval, 'esti_imag_eval2':estimate_imag_oth_eval}
+    dic_pred = {'Time':tseries[train_length - 1 : -1],'a':b_tseries[train_length - 1 : -1,0],'c':b_tseries[train_length - 1 : -1,1],
+                'traj_x':x_tseries[train_length - 1 : -1,0],'traj_y':x_tseries[train_length - 1 : -1,1],
+                'esti_rrate':estimate_rrate, 'esti_real_eval2':estimate_real_oth_eval,
+                'esti_imag_eval1':estimate_imag_dom_eval, 'esti_imag_eval2':estimate_imag_oth_eval,
+                    'initial_theta':best_initial_theta_list, 'delta_theta':best_delta_theta_list}
+    
+    f1_elements = ['cte_f1', 'x_f1', 'y_f1', 'b_f1', 'x^2_f1', 'xy_f1', 'bx_f1', 'y^2_f1', 'by_f1', 'x^3_f1', 'x^2y_f1', 'bx^2_f1', 'xy^2_f1', 'bxy_f1', 'y^3_f1', 'by^2_f1']
+    f2_elements = ['cte_f2', 'x_f2', 'y_f2', 'b_f2', 'x^2_f2', 'xy_f2', 'bx_f2', 'y^2_f2', 'by_f2', 'x^3_f2', 'x^2y_f2', 'bx^2_f2', 'xy^2_f2', 'bxy_f2', 'y^3_f2', 'by^2_f2']
+
+    for j in range(dtot + cte):
+        dic_pred[f1_elements[j]] = W_out_matrix_x[:,j]
+        dic_pred[f2_elements[j]] = W_out_matrix_y[:,j]
 
     csv_out = pd.DataFrame(dic_pred)
     csv_out.to_csv('../../results/ROC/sub_hopf/ews/dynamics_sub_hopf_{}.csv'.format(random_seed),header = True)
@@ -355,9 +370,10 @@ for random_seed in range(100):
     dic_stable = {'Time':tseries[-stable_length:], 'stable_expnt':estimate_stable}
 
     csv_stable = pd.DataFrame(dic_stable)
-    csv_stable.to_csv('../../results/ROC/sub_hopf/stable/sub_hopf_stable{}.csv'.format(random_seed),header = True)
+    csv_stable.to_csv('../../results/ROC/sub_hopf/stable/sub_hopf_stable_{}.csv'.format(random_seed),header = True)
 
-for random_seed in range(100):
+
+for random_seed in range(200):
 
     df_tseries = pd.read_csv('../../data/sub_hopf/ROC/sub_hopf_null_{}.csv'.format(random_seed))
     keep_col_tseries = ['traj_x','traj_y','Time','t_diff']

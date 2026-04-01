@@ -11,7 +11,7 @@ length = 1000
 train_length = 500 # Length of the rolling window
 test_length = length - train_length
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df_tseries = pd.read_csv('../../data/fold/ROC/fold_{}.csv'.format(random_seed))
     keep_col_tseries = ['traj_x','Time']
@@ -42,7 +42,7 @@ for random_seed in range(100):
 
 ################################################################################################
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df_tseries = pd.read_csv('../../data/fold/ROC/fold_null_{}.csv'.format(random_seed))
     keep_col_tseries = ['traj_x','Time']

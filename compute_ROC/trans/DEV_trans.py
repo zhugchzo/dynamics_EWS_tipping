@@ -36,7 +36,7 @@ length = 1000
 train_length = 900 # Length of the rolling window
 test_length = length - train_length
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df_tseries = pd.read_csv('../../data/trans/ROC/trans_{}.csv'.format(random_seed))
 
@@ -82,7 +82,7 @@ for random_seed in range(100):
 
 ################################################################################################
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df_tseries = pd.read_csv('../../data/trans/ROC/trans_null_{}.csv'.format(random_seed))
 

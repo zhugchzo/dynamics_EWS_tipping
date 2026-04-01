@@ -4,7 +4,7 @@ import numpy as np
 count_list = list()
 ratio_zero_list = list()
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df = pd.read_csv('../../results/ROC/sup_hopf/ews/dynamics_sup_hopf_{}.csv'.format(random_seed))
 
@@ -25,7 +25,7 @@ csv_out.to_csv('../../results/ROC/sup_hopf/dynamics_rate.csv',header = True)
 count_list = list()
 ratio_zero_list = list()
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df = pd.read_csv('../../results/ROC/sup_hopf/ews/DEV_sup_hopf_{}.csv'.format(random_seed))
 
@@ -40,9 +40,3 @@ dic_tau = {'Count':count_list, 'steady_rate':ratio_zero_list}
 csv_out = pd.DataFrame(dic_tau)
 
 csv_out.to_csv('../../results/ROC/sup_hopf/DEV_rate.csv',header = True)
-
-
-
-
-
-

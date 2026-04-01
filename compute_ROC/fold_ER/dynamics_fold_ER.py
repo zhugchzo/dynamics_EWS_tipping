@@ -44,7 +44,7 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
     if not os.path.exists('../../results/ROC/fold_ER/ews/{}'.format(network_size)):
         os.makedirs('../../results/ROC/fold_ER/ews/{}'.format(network_size))
 
-    for random_seed in range(10):
+    for random_seed in range(20):
 
         df_tseries = pd.read_csv('../../data/fold_ER/ROC/{}/fold_ER_{}.csv'.format(network_size,random_seed))
         df_network = pd.read_csv('../../data/fold_ER/ROC/{}/network_{}.csv'.format(network_size,random_seed), header=None)
@@ -69,7 +69,7 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
         # ridge parameter for regression
         ridge_param = 1e-5
 
-        keep_col_tseries = ['Time','t_diff']
+        keep_col_tseries = ['Time','t_diff','epsl']
 
         for node in range(N):
             keep_col_tseries.append('traj_x{}'.format(node))
@@ -78,9 +78,12 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
         values_tseries = new_f_tseries.values
 
         tseries = np.array(values_tseries[:,0])
+        b_tseries = np.array(values_tseries[:,2])
         x_tseries = np.array(values_tseries[:,-N:])
 
         dt = values_tseries[1,1]
+
+        x_mean = np.mean(x_tseries, axis=1)
 
         ##
         ## Global Ridge
@@ -90,6 +93,11 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
         estimate_imag_dom_eval = list()
         estimate_real_oth_eval = list()
         estimate_imag_oth_eval = list()
+
+        best_initial_theta_list = list()
+        best_delta_theta_list = list()
+
+        W_out_matrix = np.zeros((test_length,dtot + cte))
 
         grid_initial_theta = [-1, 0, 1]
         grid_delta_theta = [5e-4, 1e-3, 5e-3]
@@ -257,6 +265,9 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
             best_initial_theta = float(best_initial_theta)
             best_delta_theta = float(best_delta_theta)
 
+            best_initial_theta_list.append(best_initial_theta)
+            best_delta_theta_list.append(best_delta_theta)
+
             # create an array to hold the linear part of the feature vector
             x = np.zeros((dlin,length*N))
             y = np.zeros((d*N,length))
@@ -313,7 +324,9 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
             # ridge regression: train W_out to map out_train to x[t+1] - x[t]
             W_out = fx_t @ out_train[:,:].T @ np.linalg.pinv(out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte))
-            
+
+            W_out_matrix[i,:] = W_out
+
             for node in range(N):
 
                 # estimating recovery rate
@@ -328,10 +341,7 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
                     else:
                         jacobian[node,j] = diff_f(W_out[:dlin + dnonlin + cte], x_t, b_t) + W_out[-1]*sum_y_t
 
-            rrate = solve_eval(jacobian)[0]
-            imag_dom_eval = solve_eval(jacobian)[1]
-            real_oth_eval = solve_eval(jacobian)[2]
-            imag_oth_eval = solve_eval(jacobian)[3]
+            rrate, imag_dom_eval, real_oth_eval, imag_oth_eval = solve_eval(jacobian)
 
             estimate_rrate.append(rrate)
             estimate_imag_dom_eval.append(imag_dom_eval)
@@ -340,8 +350,14 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
             i += 1
 
-        dic_pred = {'Time':tseries[train_length - 1 : -1], 'esti_rrate':estimate_rrate, 'esti_real_oth_eval':estimate_real_oth_eval, 
-                    'esti_imag_dom_eval':estimate_imag_dom_eval, 'esti_imag_oth_eval':estimate_imag_oth_eval}
+        dic_pred = {'Time':tseries[train_length - 1 : -1], 'b_param':b_tseries[train_length - 1 : -1],'traj_x':x_mean[train_length - 1 : -1],
+                     'esti_rrate':estimate_rrate, 'esti_real_oth_eval':estimate_real_oth_eval,
+                    'esti_imag_dom_eval':estimate_imag_dom_eval, 'esti_imag_oth_eval':estimate_imag_oth_eval,
+                    'initial_theta':best_initial_theta_list, 'delta_theta':best_delta_theta_list}
+
+        polynomial = ['cte', 'x', 'b', 'x^2', 'bx', 'x^3', 'bx^2', 'x_j', 'bx_j', 'x_ix_j']
+        for j in range(dtot + cte):
+            dic_pred[polynomial[j]] = W_out_matrix[:,j]
 
         csv_out = pd.DataFrame(dic_pred)
         csv_out.to_csv('../../results/ROC/fold_ER/ews/{}/dynamics_fold_ER_{}.csv'.format(network_size,random_seed),header = True)
@@ -349,7 +365,7 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
 for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
-    for random_seed in range(10):
+    for random_seed in range(20):
 
         df_tseries = pd.read_csv('../../data/fold_ER/ROC/{}/fold_ER_null_{}.csv'.format(network_size,random_seed))
         df_network = pd.read_csv('../../data/fold_ER/ROC/{}/network_{}.csv'.format(network_size,random_seed), header=None)

@@ -4,7 +4,7 @@ import numpy as np
 count_list = list()
 ratio_zero_list = list()
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df = pd.read_csv('../../results/ROC/trans/ews/dynamics_trans_{}.csv'.format(random_seed))
 
@@ -25,7 +25,7 @@ csv_out.to_csv('../../results/ROC/trans/dynamics_rate.csv',header = True)
 count_list = list()
 ratio_zero_list = list()
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df = pd.read_csv('../../results/ROC/trans/ews/DEV_trans_{}.csv'.format(random_seed))
 

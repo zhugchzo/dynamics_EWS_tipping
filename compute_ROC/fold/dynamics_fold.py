@@ -40,15 +40,16 @@ dtot = dlin + dnonlin
 # ridge parameter for regression
 ridge_param = 1e-5
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df_tseries = pd.read_csv('../../data/fold/ROC/fold_{}.csv'.format(random_seed))
-    keep_col_tseries = ['traj_x','Time','t_diff']
+    keep_col_tseries = ['traj_x','Time','b','t_diff']
     new_f_tseries = df_tseries[keep_col_tseries]
     values_tseries = new_f_tseries.values
 
     x_tseries = np.array(values_tseries[:,0])
     tseries = np.array(values_tseries[:,1])
+    b_tseries = np.array(values_tseries[:,2])
 
     dt = values_tseries[1,-1]
 
@@ -67,6 +68,7 @@ for random_seed in range(100):
         x[0:d,j]=x_tseries[j]
 
     estimate_rrate = list()
+
     best_initial_theta_list = list()
     best_delta_theta_list = list()
 
@@ -244,14 +246,20 @@ for random_seed in range(100):
 
         i += 1
 
-    dic_pred = {'Time':tseries[train_length - 1 : -1],'esti_rrate':estimate_rrate}
+    dic_pred = {'Time':tseries[train_length - 1 : -1],'b_param':b_tseries[train_length - 1 : -1],'traj_x':x_tseries[train_length - 1 : -1],
+                'esti_rrate':estimate_rrate, 'initial_theta':best_initial_theta_list, 'delta_theta':best_delta_theta_list}
+
+    polynomial = ['cte', 'x', 'b', 'x^2', 'bx', 'x^3', 'bx^2']
+    for j in range(dtot + cte):
+        dic_pred[polynomial[j]] = W_out_matrix[:,j]
 
     csv_out = pd.DataFrame(dic_pred)
     csv_out.to_csv('../../results/ROC/fold/ews/dynamics_fold_{}.csv'.format(random_seed),header = True)
 
 ################################################################################################
 
-for random_seed in range(100):
+
+for random_seed in range(200):
 
     df_tseries = pd.read_csv('../../data/fold/ROC/fold_null_{}.csv'.format(random_seed))
     keep_col_tseries = ['traj_x','Time','t_diff']

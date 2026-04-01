@@ -72,7 +72,7 @@ y0 = 0.1
 equix0 = 1.7
 equiy0 = 0.1
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     np.random.seed(random_seed)
 

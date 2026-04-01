@@ -24,7 +24,7 @@ null_dev_tau_BA = fold_BA_null_dev['tau'].to_numpy()
 
 ################################################################################################
 
-n = 10
+n = 20
 label = np.concatenate((np.ones(n), np.zeros(n)), axis=0)
 
 dynamics_auc_list = []

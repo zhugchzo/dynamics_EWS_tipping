@@ -7,7 +7,7 @@ count = 0
 
 for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
-    for random_seed in range(10):
+    for random_seed in range(20):
 
         df = pd.read_csv('../../results/ROC/fold_BA/ews/{}/dynamics_fold_BA_{}.csv'.format(network_size,random_seed))
 
@@ -34,7 +34,7 @@ count = 0
 
 for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
-    for random_seed in range(10):
+    for random_seed in range(20):
 
         df = pd.read_csv('../../results/ROC/fold_BA/ews/{}/DEV_fold_BA_{}.csv'.format(network_size,random_seed))
 

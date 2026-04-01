@@ -38,7 +38,7 @@ test_length = length - train_length
 
 for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
-    for random_seed in range(10):
+    for random_seed in range(20):
 
         df_tseries = pd.read_csv('../../data/fold_ER/ROC/{}/fold_ER_{}.csv'.format(network_size,random_seed))
         df_network = pd.read_csv('../../data/fold_ER/ROC/{}/network_{}.csv'.format(network_size,random_seed), header=None)
@@ -92,7 +92,7 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
 for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
-    for random_seed in range(10):
+    for random_seed in range(20):
 
         df_tseries = pd.read_csv('../../data/fold_ER/ROC/{}/fold_ER_null_{}.csv'.format(network_size,random_seed))
         df_network = pd.read_csv('../../data/fold_ER/ROC/{}/network_{}.csv'.format(network_size,random_seed), header=None)

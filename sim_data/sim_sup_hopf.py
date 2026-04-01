@@ -120,7 +120,7 @@ kl = 1.6
 kh = 4 # 2.9 control parameter final value
 c_rate = 1e-5
 
-np.random.seed(37)
+np.random.seed(40)
 
 sim_len = int((kh-kl)*dt/c_rate)
 series_len = 1000
@@ -207,9 +207,9 @@ for i in range(len(t)-1):
     if rrate[i] < 0 and rrate[i+1] > 0:
         rrate_record.append(i+1)
 
-    if k.iloc[i] > 2.9:
-        length = i
-        break
+    # if k.iloc[i] > 2.9:
+    #     length = i
+    #     break
 
 if len(rrate_record) != 0:
 
@@ -220,7 +220,8 @@ if len(rrate_record) != 0:
 
     c2 = c1.copy()
 
-    c0 = np.linspace(trans_time,length,int((length-trans_time)*series_len/trans_time))
+    #c0 = np.linspace(trans_time,length,int((length-trans_time)*series_len/trans_time))
+    c0 = np.linspace(trans_time,len(t)-1,int((len(t)-1-trans_time)*series_len/trans_time))
     c0 = c0[1:]
     c0 = list(map(int,c0))
     c2.extend(c0)
@@ -250,7 +251,7 @@ df_temp_c2 = df_temp_c2[cols]
 
 stable_list = []
 
-df_temp_c1_stable = df_temp_c1[['Time','equix','equiy','b','imag_eval1']].iloc[-20:]
+df_temp_c1_stable = df_temp_c1[['Time','equix','equiy','b','imag_eval1']].iloc[-50:]
 
 T = df_temp_c1_stable['Time'].values + 1
 u_t = df_temp_c1_stable['equix'].values
@@ -274,8 +275,6 @@ filepath_train = '../data/sup_hopf/sup_hopf_train.csv'
 filepath = '../data/sup_hopf/sup_hopf.csv'
 filepath_stable = '../data/sup_hopf/sup_hopf_stable.csv'
 
-df_temp_c1.to_csv(filepath_train,index=False)
+# df_temp_c1.to_csv(filepath_train,index=False)
 df_temp_c2.to_csv(filepath,index=False)
 dic_stable.to_csv(filepath_stable,index=False)
-
-

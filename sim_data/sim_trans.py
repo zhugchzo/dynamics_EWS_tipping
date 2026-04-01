@@ -68,7 +68,7 @@ ah = 7 # control parameter final value
 
 c_rate = 7.2e-5
 
-np.random.seed(44)
+np.random.seed(17)
 
 sim_len = int((ah-al)*dt/c_rate)
 series_len = 1000
@@ -134,43 +134,27 @@ rrate_record = []
 # Run simulation
 for i in range(len(t)-1):
 
-    if len(rrate_record) == 0:
+    x[i+1] = x[i] + de_fun_x(x[i],y[i],g,k,a.iloc[i],h)*dt + dW_x[i]
+    y[i+1] = y[i] + de_fun_y(x[i],y[i],e,a.iloc[i],h,m)*dt + dW_y[i]
+    equix[i+1] = equix[i] + de_fun_x(equix[i],equiy[i],g,k,a.iloc[i],h)*dt
+    equiy[i+1] = equiy[i] + de_fun_y(equix[i],equiy[i],e,a.iloc[i],h,m)*dt
 
-        x[i+1] = x[i] + de_fun_x(x[i],y[i],g,k,a.iloc[i],h)*dt + dW_x[i]
-        y[i+1] = y[i] + de_fun_y(x[i],y[i],e,a.iloc[i],h,m)*dt + dW_y[i]
-        equix[i+1] = equix[i] + de_fun_x(equix[i],equiy[i],g,k,a.iloc[i],h)*dt
-        equiy[i+1] = equiy[i] + de_fun_y(equix[i],equiy[i],e,a.iloc[i],h,m)*dt
+    rrate[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[0]
+    imag_dom_eval[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[1]
+    real_oth_eval[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[2]
+    imag_oth_eval[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[3]
 
-        rrate[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[0]
-        imag_dom_eval[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[1]
-        real_oth_eval[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[2]
-        imag_oth_eval[i+1] = recov_fun(equix[i+1],equiy[i+1],g,k,e,a.iloc[i+1],h,m)[3]
+    if rrate[i+1] == 1997.0209:
+        print('rrate Nan appears')
+        # break
 
-        if rrate[i+1] == 1997.0209:
-            print('rrate Nan appears')
-            # break
+    if math.isnan(x[i+1]) or math.isnan(y[i+1]):
+        print('sim Nan appears')
+        # break
 
-        if math.isnan(x[i+1]) or math.isnan(y[i+1]):
-            print('sim Nan appears')
-            # break
-
-        # Determine the tipping point by the recovery rate changing from negative to positive
-        if rrate[i] < 0 and rrate[i+1] > 0:
-            rrate_record.append(i+1)
-
-    else:
-
-        if i == rrate_record[0]:
-
-            x[i+1] = 1.7
-            y[i+1] = 0.03
-
-            # x[i+1] = 1.6774932805929015
-            # y[i+1] = 0.022647546315126325
-        
-        else:
-            x[i+1] = x[i] + de_fun_x(x[i],y[i],g,k,a.iloc[i],h)*dt + dW_x[i]
-            y[i+1] = y[i] + de_fun_y(x[i],y[i],e,a.iloc[i],h,m)*dt + dW_y[i]
+    # Determine the tipping point by the recovery rate changing from negative to positive
+    if rrate[i] < 0 and rrate[i+1] > 0:
+        rrate_record.append(i+1)
 
 
 if len(rrate_record) != 0:
@@ -218,5 +202,5 @@ df_temp_c2 = df_temp_c2[cols]
 filepath_train = '../data/trans/trans_train.csv'
 filepath = '../data/trans/trans.csv'
 
-df_temp_c1.to_csv(filepath_train,index=False)
+# df_temp_c1.to_csv(filepath_train,index=False)
 df_temp_c2.to_csv(filepath,index=False)

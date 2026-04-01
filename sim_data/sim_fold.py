@@ -32,7 +32,7 @@ s = 1 # half-saturation constant of harvesting function
 
 bcrit = 2.3 # bifurcation point (computed in Mathematica)
 bl = 1
-bh = 2.5 # bifurcation parameter high
+bh = 3 # bifurcation parameter high
 c_rate = 1.5e-5 # bifurcation parameter change rate
 
 np.random.seed(15)

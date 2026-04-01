@@ -5,7 +5,7 @@ count_list = list()
 tau_list = list()
 tau_null_list = list()
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df = pd.read_csv('../../results/ROC/sub_hopf/ews/dynamics_sub_hopf_{}.csv'.format(random_seed))
     df_null = pd.read_csv('../../results/ROC/sub_hopf/ews/dynamics_sub_hopf_null_{}.csv'.format(random_seed))
@@ -36,7 +36,7 @@ count_list = list()
 tau_list = list()
 tau_null_list = list()
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df = pd.read_csv('../../results/ROC/sub_hopf/ews/lag-1_sub_hopf_{}.csv'.format(random_seed))
     df_null = pd.read_csv('../../results/ROC/sub_hopf/ews/lag-1_sub_hopf_null_{}.csv'.format(random_seed))
@@ -67,7 +67,7 @@ count_list = list()
 tau_list = list()
 tau_null_list = list()
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df = pd.read_csv('../../results/ROC/sub_hopf/ews/DEV_sub_hopf_{}.csv'.format(random_seed))
     df_null = pd.read_csv('../../results/ROC/sub_hopf/ews/DEV_sub_hopf_null_{}.csv'.format(random_seed))

@@ -3,8 +3,8 @@ import pandas as pd
 import os
 from sympy import symbols, diff
 
-if not os.path.exists('../results/fold'):
-    os.makedirs('../results/fold')
+if not os.path.exists('../results/ROC/fold/SINDy'):
+    os.makedirs('../results/ROC/fold/SINDy')
 
 def diff_f(coefficient, x_t, b_t):
 
@@ -37,244 +37,246 @@ dnonlin = dnonlin_2 + dnonlin_3
 # total size of feature vector: linear + nonlinear
 dtot = dlin + dnonlin
 
-df_tseries = pd.read_csv('../data/fold/fold_train.csv')
-keep_col_tseries = ['traj_x','b','Time','rrate','t_diff']
-new_f_tseries = df_tseries[keep_col_tseries]
-values_tseries = new_f_tseries.values
+for random_seed in range(200):
 
-x_tseries = np.array(values_tseries[:,0])
-b_tseries = np.array(values_tseries[:,1])
-tseries = np.array(values_tseries[:,2])
-rrate_tseries = np.array(values_tseries[:,3])
+    df_tseries = pd.read_csv('../data/fold/ROC/fold_{}.csv'.format(random_seed))
+    keep_col_tseries = ['traj_x','b','Time','rrate','t_diff']
+    new_f_tseries = df_tseries[keep_col_tseries]
+    values_tseries = new_f_tseries.values
 
-dt = values_tseries[1,-1]
+    x_tseries = np.array(values_tseries[:,0])
+    b_tseries = np.array(values_tseries[:,1])
+    tseries = np.array(values_tseries[:,2])
+    rrate_tseries = np.array(values_tseries[:,3])
 
-def rrate_update(W_out, partial_t):
-    return W_out @ partial_t
+    dt = values_tseries[1,-1]
 
-##
-## SINDy
-##
+    def rrate_update(W_out, partial_t):
+        return W_out @ partial_t
 
-# create an array to hold the linear part of the feature vector
-x = np.zeros((dlin,length))
+    ##
+    ## SINDy
+    ##
 
-# fill in the linear part of the feature vector for all times
-for j in range(length):
-    x[0:d,j]=x_tseries[j]
+    # create an array to hold the linear part of the feature vector
+    x = np.zeros((dlin,length))
 
-estimate_rrate = list()
-best_initial_theta_list = list()
-best_delta_theta_list = list()
+    # fill in the linear part of the feature vector for all times
+    for j in range(length):
+        x[0:d,j]=x_tseries[j]
 
-W_out_matrix = np.zeros((test_length,dtot + cte))
+    estimate_rrate = list()
+    best_initial_theta_list = list()
+    best_delta_theta_list = list()
 
-grid_initial_theta = [-1, 0, 1]
-grid_delta_theta = [5e-4, 1e-3, 5e-3]
+    W_out_matrix = np.zeros((test_length,dtot + cte))
 
-i = 0
+    grid_initial_theta = [-1, 0, 1]
+    grid_delta_theta = [5e-4, 1e-3, 5e-3]
 
-for winstart in range(test_length):
+    i = 0
 
-    dic_AIC = {}
+    for winstart in range(test_length):
 
-    for initial_theta in grid_initial_theta:
+        dic_AIC = {}
 
-        for delta_theta in grid_delta_theta:
+        for initial_theta in grid_initial_theta:
 
-            # create an array to hold the full feature vector for training time
-            # (use ones so the constant term is already 1)
-            out_train = np.ones((dtot + cte,train_length))  
+            for delta_theta in grid_delta_theta:
 
-            # copy over the linear part (shift over by one to account for constant if needed)
-            x[-1,winstart:winstart + train_length] = np.linspace(initial_theta, initial_theta + (train_length - 1) * delta_theta, train_length)
-            out_train[cte:dlin + cte,:] = x[:,winstart:winstart + train_length]
+                # create an array to hold the full feature vector for training time
+                # (use ones so the constant term is already 1)
+                out_train = np.ones((dtot + cte,train_length))  
 
-            # fill in the non-linear part, order = 2
-            cnt = 0
-            for row1 in range(dlin):
-                if row1 < dlin-1:
-                    for row2 in range(row1,dlin):
-                        # shift by one for constant if needed
-                        out_train[dlin + cnt + cte] = x[row1,winstart:winstart + train_length] * x[row2,winstart:winstart + train_length]
-                        cnt += 1
+                # copy over the linear part (shift over by one to account for constant if needed)
+                x[-1,winstart:winstart + train_length] = np.linspace(initial_theta, initial_theta + (train_length - 1) * delta_theta, train_length)
+                out_train[cte:dlin + cte,:] = x[:,winstart:winstart + train_length]
 
-            # fill in the non-linear part, order = 3
-            for row1 in range(dlin):
-                if row1 < dlin-1:
-                    for row2 in range(row1,dlin):
-                        if row2 < dlin-1:
-                            for row3 in range(row2,dlin):
-                                out_train[dlin + cnt + cte] = x[row1,winstart:winstart + train_length] * x[row2,winstart:winstart + train_length] * x[row3,winstart:winstart + train_length]
-                                cnt += 1
-
-            # compute the pseudo-inverse matrix error
-
-            pinv_error_matrix = np.linalg.pinv(out_train[:,:] @ out_train[:,:].T) @ (out_train[:,:] @ out_train[:,:].T) - np.identity(out_train.shape[0])
-            pinv_error = np.sum(pinv_error_matrix**2) / out_train.shape[0]**2
-
-            # Initialize the regression coefficient matrix W_out
-            W_out = (x[0:d, winstart + 1:winstart + train_length + 1] - x[0:d, winstart:winstart + train_length])/dt @ out_train[:, :].T @ np.linalg.pinv(out_train[:, :] @ out_train[:, :].T)  # Initial least-squares solution
-
-            # Set the sparsification parameter lambda
-            lambda_param = 0.005  # Adjustable parameter, modify according to your data
-
-            # Perform sparsification, iterate multiple times to obtain a sparse solution
-            for k in range(5):  # Number of iterations, can be adjusted as needed
-                # Find the coefficients smaller than lambda_param and set them to zero
-                smallinds = (np.abs(W_out) < lambda_param)
-                W_out[smallinds] = 0
-                
-                # For each state dimension, perform least-squares regression again, only keeping the large coefficients
-                for ind in range(d):  # Iterate over each state dimension
-                    biginds = ~smallinds[ind, :]  # Indices of large coefficients
-                    # Perform regression using only the non-zero coefficients
-                    W_out[ind, biginds] = (x[ind,winstart + 1:winstart + train_length + 1] - x[ind,winstart:winstart + train_length]) @ out_train[biginds,:].T @ np.linalg.pinv(out_train[biginds,:] @ out_train[biginds,:].T)
-
-#####################################################################################
-
-            # generation, compute MSE
-
-            # create a place to store feature vectors for prediction
-            out_gen = np.ones((dtot + cte))        # full feature vector
-            x_gen = np.zeros((dlin,train_length))      # linear part
-
-            x_gen[d:d+1,:] = np.linspace(initial_theta, initial_theta + (train_length - 1) * delta_theta, train_length)
-
-            # copy over initial linear feature vector
-            x_gen[:d,0] = x_tseries[winstart]
-
-            gen_traj = np.zeros((d,train_length))
-            gen_traj[:,0] = x_gen[0:d,0]
-
-            for j in range(train_length-1):
-
-                # copy linear part into whole feature vector
-                out_gen[cte:dlin + cte] = x_gen[:,j] # shift by one for constant
-
-                # fill in the non-linear part
-
+                # fill in the non-linear part, order = 2
                 cnt = 0
-                # 2-order
                 for row1 in range(dlin):
                     if row1 < dlin-1:
                         for row2 in range(row1,dlin):
-                            # shift by one for constant
-                            out_gen[dlin + cnt + cte] = x_gen[row1,j] * x_gen[row2,j]
+                            # shift by one for constant if needed
+                            out_train[dlin + cnt + cte] = x[row1,winstart:winstart + train_length] * x[row2,winstart:winstart + train_length]
                             cnt += 1
 
-                # 3-order
+                # fill in the non-linear part, order = 3
                 for row1 in range(dlin):
                     if row1 < dlin-1:
                         for row2 in range(row1,dlin):
                             if row2 < dlin-1:
                                 for row3 in range(row2,dlin):
-                                    # shift by one for constant
-                                    out_gen[dlin + cnt + cte] = x_gen[row1,j] * x_gen[row2,j] * x_gen[row3,j]
+                                    out_train[dlin + cnt + cte] = x[row1,winstart:winstart + train_length] * x[row2,winstart:winstart + train_length] * x[row3,winstart:winstart + train_length]
                                     cnt += 1
 
-                # do a prediction
-                x_gen[0:d,j+1] = x_gen[0:d,j] + (W_out @ out_gen[:])*dt
+                # compute the pseudo-inverse matrix error
 
-                gen_traj[:,j+1] = x_gen[0:d,j+1]
+                pinv_error_matrix = np.linalg.pinv(out_train[:,:] @ out_train[:,:].T) @ (out_train[:,:] @ out_train[:,:].T) - np.identity(out_train.shape[0])
+                pinv_error = np.sum(pinv_error_matrix**2) / out_train.shape[0]**2
 
-            sums = np.sum((x_tseries[winstart : winstart+train_length] - gen_traj.T)**2)
-            mse = sums / train_length
+                # Initialize the regression coefficient matrix W_out
+                W_out = (x[0:d, winstart + 1:winstart + train_length + 1] - x[0:d, winstart:winstart + train_length])/dt @ out_train[:, :].T @ np.linalg.pinv(out_train[:, :] @ out_train[:, :].T)  # Initial least-squares solution
 
-            # compute AIC
-            if np.log(mse) >= 0:
-                AIC = pinv_error*train_length*np.log(mse) + 2*np.count_nonzero(W_out)
-            else:
-                AIC = train_length*np.log(mse)/pinv_error + 2*np.count_nonzero(W_out)
+                # Set the sparsification parameter lambda
+                lambda_param = 0.005  # Adjustable parameter, modify according to your data
 
-            if np.isnan(AIC):
-                AIC = 1e5
+                # Perform sparsification, iterate multiple times to obtain a sparse solution
+                for k in range(5):  # Number of iterations, can be adjusted as needed
+                    # Find the coefficients smaller than lambda_param and set them to zero
+                    smallinds = (np.abs(W_out) < lambda_param)
+                    W_out[smallinds] = 0
+                    
+                    # For each state dimension, perform least-squares regression again, only keeping the large coefficients
+                    for ind in range(d):  # Iterate over each state dimension
+                        biginds = ~smallinds[ind, :]  # Indices of large coefficients
+                        # Perform regression using only the non-zero coefficients
+                        W_out[ind, biginds] = (x[ind,winstart + 1:winstart + train_length + 1] - x[ind,winstart:winstart + train_length]) @ out_train[biginds,:].T @ np.linalg.pinv(out_train[biginds,:] @ out_train[biginds,:].T)
 
-            dic_AIC['({},{})'.format(initial_theta,delta_theta)] = AIC
+    #####################################################################################
 
-    # find the best theta
+                # generation, compute MSE
 
-    formatted = {}
+                # create a place to store feature vectors for prediction
+                out_gen = np.ones((dtot + cte))        # full feature vector
+                x_gen = np.zeros((dlin,train_length))      # linear part
 
-    for key, value in dic_AIC.items():
-        row, col = key.strip('()').split(',')
-        formatted[(row, col)] = value
+                x_gen[d:d+1,:] = np.linspace(initial_theta, initial_theta + (train_length - 1) * delta_theta, train_length)
 
-    min_key = min(dic_AIC, key=dic_AIC.get)
+                # copy over initial linear feature vector
+                x_gen[:d,0] = x_tseries[winstart]
 
-    best_initial_theta, best_delta_theta = min_key.strip('()').split(',')
+                gen_traj = np.zeros((d,train_length))
+                gen_traj[:,0] = x_gen[0:d,0]
 
-    best_initial_theta = float(best_initial_theta)
-    best_delta_theta = float(best_delta_theta)
+                for j in range(train_length-1):
 
-    best_initial_theta_list.append(best_initial_theta)
-    best_delta_theta_list.append(best_delta_theta)
+                    # copy linear part into whole feature vector
+                    out_gen[cte:dlin + cte] = x_gen[:,j] # shift by one for constant
 
-    # create an array to hold the full feature vector for training time
-    # (use ones so the constant term is already 1)
-    out_train = np.ones((dtot + cte,train_length))  
+                    # fill in the non-linear part
 
-    # copy over the linear part (shift over by one to account for constant if needed)
-    x[-1,winstart:winstart + train_length] = np.linspace(best_initial_theta, best_initial_theta + (train_length - 1) * best_delta_theta, train_length)
-    out_train[cte:dlin + cte,:] = x[:,winstart:winstart + train_length]
+                    cnt = 0
+                    # 2-order
+                    for row1 in range(dlin):
+                        if row1 < dlin-1:
+                            for row2 in range(row1,dlin):
+                                # shift by one for constant
+                                out_gen[dlin + cnt + cte] = x_gen[row1,j] * x_gen[row2,j]
+                                cnt += 1
 
-    # fill in the non-linear part, order = 2
-    cnt = 0
-    for row1 in range(dlin):
-        if row1 < dlin-1:
-            for row2 in range(row1,dlin):
-                # shift by one for constant if needed
-                out_train[dlin + cnt + cte] = x[row1,winstart:winstart + train_length] * x[row2,winstart:winstart + train_length]
-                cnt += 1
+                    # 3-order
+                    for row1 in range(dlin):
+                        if row1 < dlin-1:
+                            for row2 in range(row1,dlin):
+                                if row2 < dlin-1:
+                                    for row3 in range(row2,dlin):
+                                        # shift by one for constant
+                                        out_gen[dlin + cnt + cte] = x_gen[row1,j] * x_gen[row2,j] * x_gen[row3,j]
+                                        cnt += 1
 
-    # fill in the non-linear part, order = 3
-    for row1 in range(dlin):
-        if row1 < dlin-1:
-            for row2 in range(row1,dlin):
-                if row2 < dlin-1:
-                    for row3 in range(row2,dlin):
-                        out_train[dlin + cnt + cte] = x[row1,winstart:winstart + train_length] * x[row2,winstart:winstart + train_length] * x[row3,winstart:winstart + train_length]
-                        cnt += 1
-        
-    # the colunm of out_train_t is (cte, x, b, x^2, bx, x^3, bx^2).T
-    out_train_t = out_train[:,-1]
+                    # do a prediction
+                    x_gen[0:d,j+1] = x_gen[0:d,j] + (W_out @ out_gen[:])*dt
 
-    # Initialize the regression coefficient matrix W_out
-    W_out = (x[0:d, winstart + 1:winstart + train_length + 1] - x[0:d, winstart:winstart + train_length])/dt @ out_train[:, :].T @ np.linalg.pinv(out_train[:, :] @ out_train[:, :].T)  # Initial least-squares solution
+                    gen_traj[:,j+1] = x_gen[0:d,j+1]
 
-    # Set the sparsification parameter lambda
-    lambda_param = 0.005  # Adjustable parameter, modify according to your data
+                sums = np.sum((x_tseries[winstart : winstart+train_length] - gen_traj.T)**2)
+                mse = sums / train_length
 
-    # Perform sparsification, iterate multiple times to obtain a sparse solution
-    for k in range(5):  # Number of iterations, can be adjusted as needed
-        # Find the coefficients smaller than lambda_param and set them to zero
-        smallinds = (np.abs(W_out) < lambda_param)
-        W_out[smallinds] = 0
-        
-        # For each state dimension, perform least-squares regression again, only keeping the large coefficients
-        for ind in range(d):  # Iterate over each state dimension
-            biginds = ~smallinds[ind, :]  # Indices of large coefficients
-            # Perform regression using only the non-zero coefficients
-            W_out[ind, biginds] = (x[ind,winstart + 1:winstart + train_length + 1] - x[ind,winstart:winstart + train_length]) @ out_train[biginds,:].T @ np.linalg.pinv(out_train[biginds,:] @ out_train[biginds,:].T)
+                # compute AIC
+                if np.log(mse) >= 0:
+                    AIC = pinv_error*train_length*np.log(mse) + 2*np.count_nonzero(W_out)
+                else:
+                    AIC = train_length*np.log(mse)/pinv_error + 2*np.count_nonzero(W_out)
 
-    W_out_matrix[i,:] = W_out[0]
+                if np.isnan(AIC):
+                    AIC = 1e5
 
-    # estimating recovery rate
+                dic_AIC['({},{})'.format(initial_theta,delta_theta)] = AIC
 
-    x_t = out_train_t[1]
-    b_t = out_train_t[2]
+        # find the best theta
 
-    rrate = diff_f(W_out_matrix[i,:], x_t, b_t)
-    estimate_rrate.append(rrate)
+        formatted = {}
 
-    i += 1
+        for key, value in dic_AIC.items():
+            row, col = key.strip('()').split(',')
+            formatted[(row, col)] = value
 
-dic_pred = {'Time':tseries[train_length - 1 : -1],'b_param':b_tseries[train_length - 1 : -1],'traj_x':x_tseries[train_length - 1 : -1],
-            'rrate':rrate_tseries[train_length - 1 : -1],'esti_rrate':estimate_rrate, 'initial_theta':best_initial_theta_list, 'delta_theta':best_delta_theta_list}
+        min_key = min(dic_AIC, key=dic_AIC.get)
 
-polynomial = ['cte', 'x', 'b', 'x^2', 'bx', 'x^3', 'bx^2']
-for j in range(dtot + cte):
-    dic_pred[polynomial[j]] = W_out_matrix[:,j]
+        best_initial_theta, best_delta_theta = min_key.strip('()').split(',')
 
-csv_out = pd.DataFrame(dic_pred)
-csv_out.to_csv('../results/fold/SINDy_fold.csv',header = True)
+        best_initial_theta = float(best_initial_theta)
+        best_delta_theta = float(best_delta_theta)
+
+        best_initial_theta_list.append(best_initial_theta)
+        best_delta_theta_list.append(best_delta_theta)
+
+        # create an array to hold the full feature vector for training time
+        # (use ones so the constant term is already 1)
+        out_train = np.ones((dtot + cte,train_length))  
+
+        # copy over the linear part (shift over by one to account for constant if needed)
+        x[-1,winstart:winstart + train_length] = np.linspace(best_initial_theta, best_initial_theta + (train_length - 1) * best_delta_theta, train_length)
+        out_train[cte:dlin + cte,:] = x[:,winstart:winstart + train_length]
+
+        # fill in the non-linear part, order = 2
+        cnt = 0
+        for row1 in range(dlin):
+            if row1 < dlin-1:
+                for row2 in range(row1,dlin):
+                    # shift by one for constant if needed
+                    out_train[dlin + cnt + cte] = x[row1,winstart:winstart + train_length] * x[row2,winstart:winstart + train_length]
+                    cnt += 1
+
+        # fill in the non-linear part, order = 3
+        for row1 in range(dlin):
+            if row1 < dlin-1:
+                for row2 in range(row1,dlin):
+                    if row2 < dlin-1:
+                        for row3 in range(row2,dlin):
+                            out_train[dlin + cnt + cte] = x[row1,winstart:winstart + train_length] * x[row2,winstart:winstart + train_length] * x[row3,winstart:winstart + train_length]
+                            cnt += 1
+            
+        # the colunm of out_train_t is (cte, x, b, x^2, bx, x^3, bx^2).T
+        out_train_t = out_train[:,-1]
+
+        # Initialize the regression coefficient matrix W_out
+        W_out = (x[0:d, winstart + 1:winstart + train_length + 1] - x[0:d, winstart:winstart + train_length])/dt @ out_train[:, :].T @ np.linalg.pinv(out_train[:, :] @ out_train[:, :].T)  # Initial least-squares solution
+
+        # Set the sparsification parameter lambda
+        lambda_param = 0.005  # Adjustable parameter, modify according to your data
+
+        # Perform sparsification, iterate multiple times to obtain a sparse solution
+        for k in range(5):  # Number of iterations, can be adjusted as needed
+            # Find the coefficients smaller than lambda_param and set them to zero
+            smallinds = (np.abs(W_out) < lambda_param)
+            W_out[smallinds] = 0
+            
+            # For each state dimension, perform least-squares regression again, only keeping the large coefficients
+            for ind in range(d):  # Iterate over each state dimension
+                biginds = ~smallinds[ind, :]  # Indices of large coefficients
+                # Perform regression using only the non-zero coefficients
+                W_out[ind, biginds] = (x[ind,winstart + 1:winstart + train_length + 1] - x[ind,winstart:winstart + train_length]) @ out_train[biginds,:].T @ np.linalg.pinv(out_train[biginds,:] @ out_train[biginds,:].T)
+
+        W_out_matrix[i,:] = W_out[0]
+
+        # estimating recovery rate
+
+        x_t = out_train_t[1]
+        b_t = out_train_t[2]
+
+        rrate = diff_f(W_out_matrix[i,:], x_t, b_t)
+        estimate_rrate.append(rrate)
+
+        i += 1
+
+    dic_pred = {'Time':tseries[train_length - 1 : -1],'b_param':b_tseries[train_length - 1 : -1],'traj_x':x_tseries[train_length - 1 : -1],
+                'rrate':rrate_tseries[train_length - 1 : -1],'esti_rrate':estimate_rrate, 'initial_theta':best_initial_theta_list, 'delta_theta':best_delta_theta_list}
+
+    polynomial = ['cte', 'x', 'b', 'x^2', 'bx', 'x^3', 'bx^2']
+    for j in range(dtot + cte):
+        dic_pred[polynomial[j]] = W_out_matrix[:,j]
+
+    csv_out = pd.DataFrame(dic_pred)
+    csv_out.to_csv('../results/ROC/fold/SINDy/fold_{}.csv'.format(random_seed),header = True)

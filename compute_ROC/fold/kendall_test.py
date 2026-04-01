@@ -6,7 +6,7 @@ count_list = list()
 tau_list = list()
 tau_null_list = list()
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df = pd.read_csv('../../results/ROC/fold/ews/dynamics_fold_{}.csv'.format(random_seed))
     df_null = pd.read_csv('../../results/ROC/fold/ews/dynamics_fold_null_{}.csv'.format(random_seed))
@@ -37,7 +37,7 @@ count_list = list()
 tau_list = list()
 tau_null_list = list()
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df = pd.read_csv('../../results/ROC/fold/ews/lag-1_fold_{}.csv'.format(random_seed))
     df_null = pd.read_csv('../../results/ROC/fold/ews/lag-1_fold_null_{}.csv'.format(random_seed))
@@ -73,7 +73,7 @@ count_list = list()
 tau_list = list()
 tau_null_list = list()
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     df = pd.read_csv('../../results/ROC/fold/ews/DEV_fold_{}.csv'.format(random_seed))
     df_null = pd.read_csv('../../results/ROC/fold/ews/DEV_fold_null_{}.csv'.format(random_seed))

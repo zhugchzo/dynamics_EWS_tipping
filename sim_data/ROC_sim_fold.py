@@ -41,7 +41,7 @@ series_len = 1000
 x0 = 0.8197 # intial condition (equilibrium value computed in Mathematica)
 equi0 = 0.8197
 
-for random_seed in range(100):
+for random_seed in range(200):
 
     np.random.seed(random_seed)
 

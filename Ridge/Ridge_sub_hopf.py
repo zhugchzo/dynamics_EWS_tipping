@@ -99,7 +99,7 @@ def stable_exponent(coefficient_F, coefficient_G, u_t, v_t, b_t, imag_t):
     return stable
 
 length = 1000
-stable_length = 30
+stable_length = 50
 
 train_length = 500 # Length of the rolling window
 test_length = length - train_length

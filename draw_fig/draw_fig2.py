@@ -15,7 +15,7 @@ plt.rcParams['ytick.labelsize'] = 14
 
 ################################################################################################
 
-n = 100
+n = 200
 
 label = np.concatenate((np.ones(n), np.zeros(n)), axis=0)
 label_steady = np.concatenate((np.ones(n), np.ones(n), np.ones(n), np.zeros(n), np.zeros(n)), axis=0)
@@ -152,59 +152,6 @@ auc_dev_BA = auc(fpr_dev_BA, tpr_dev_BA)
 
 ################################################################################################
 
-textstr = '\n'.join([
-    r'$\text{A}_{\text{UEWS}} = %.2f$' % auc_dynamics_ER,
-    r'$\text{A}_{\text{AC}} = %.2f$' % auc_ac_ER,
-    r'$\text{A}_{\text{DEV}} = %.2f$' % auc_dev_ER
-])
-
-ax1.plot(fpr_dynamics_ER, tpr_dynamics_ER, c='crimson',linewidth=2,zorder=3)
-ax1.plot(fpr_ac_ER, tpr_ac_ER, c='darkslateblue',linewidth=2,zorder=2)
-ax1.plot(fpr_dev_ER, tpr_dev_ER, c='darkorange',linewidth=2,zorder=1)
-ax1.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
-
-ax1.text(0.45, 0.35, textstr, transform=ax1.transAxes, fontsize=12,
-         verticalalignment='top')
-
-ax1.set_xlabel('False positive rate',font_x)
-ax1.set_ylabel('True positive rate',font_y)
-
-ax1.set_xticks([0,0.5,1])
-ax1.set_xticklabels(['0','0.5','1'])
-ax1.set_yticks([0,0.5,1])
-ax1.set_yticklabels(['0','0.5','1'])
-
-ax1.set_title('Mutualistic network (ER)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans', fontstyle= 'italic', y=1.02)
-ax1.text(0.83, 0.75,'(a)',ha='left', transform=ax1.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
-
-################################################################################################
-
-textstr = '\n'.join([
-    r'$\text{A}_{\text{UEWS}} = %.2f$' % auc_dynamics_BA,
-    r'$\text{A}_{\text{AC}} = %.2f$' % auc_ac_BA,
-    r'$\text{A}_{\text{DEV}} = %.2f$' % auc_dev_BA
-])
-
-ax2.plot(fpr_dynamics_BA, tpr_dynamics_BA, c='crimson',linewidth=2,zorder=3)
-ax2.plot(fpr_ac_BA, tpr_ac_BA, c='darkslateblue',linewidth=2,zorder=2)
-ax2.plot(fpr_dev_BA, tpr_dev_BA, c='darkorange',linewidth=2,zorder=1)
-ax2.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
-
-ax2.text(0.45, 0.35, textstr, transform=ax2.transAxes, fontsize=12,
-         verticalalignment='top')
-
-ax2.set_xlabel('False positive rate',font_x)
-
-ax2.set_xticks([0,0.5,1])
-ax2.set_xticklabels(['0','0.5','1'])
-ax2.set_yticks([0,0.5,1])
-ax2.set_yticklabels(['0','0.5','1'])
-
-ax2.set_title('Mutualistic network (BA)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
-ax2.text(0.83, 0.75,'(b)',ha='left', transform=ax2.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
-
-################################################################################################
-
 dynamics_tau = trans_dynamics['tau'].to_numpy()
 null_dynamics_tau = trans_null_dynamics['tau'].to_numpy()
 
@@ -236,28 +183,29 @@ fpr_dev, tpr_dev, thresholds_dev = roc_curve(label, dev)
 auc_dev = auc(fpr_dev, tpr_dev)
 
 textstr = '\n'.join([
-    r'$\text{A}_{\text{UEWS}} = %.2f$' % auc_dynamics,
+    r'$\text{A}_{\text{DEWS}} = %.2f$' % auc_dynamics,
     r'$\text{A}_{\text{AC}} = %.2f$' % auc_ac,
     r'$\text{A}_{\text{DEV}} = %.2f$' % auc_dev
 ])
 
-ax3.plot(fpr_dynamics, tpr_dynamics, c='crimson',linewidth=2,zorder=3)
-ax3.plot(fpr_ac, tpr_ac, c='darkslateblue',linewidth=2,zorder=2)
-ax3.plot(fpr_dev, tpr_dev, c='darkorange',linewidth=2,zorder=1)
-ax3.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+ax1.plot(fpr_dynamics, tpr_dynamics, c='crimson',linewidth=2,zorder=3)
+ax1.plot(fpr_ac, tpr_ac, c='darkslateblue',linewidth=2,zorder=2)
+ax1.plot(fpr_dev, tpr_dev, c='darkorange',linewidth=2,zorder=1)
+ax1.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
 
-ax3.text(0.45, 0.35, textstr, transform=ax3.transAxes, fontsize=12,
+ax1.text(0.45, 0.35, textstr, transform=ax1.transAxes, fontsize=12,
          verticalalignment='top')
 
-ax3.set_xlabel('False positive rate',font_x)
+ax1.set_xlabel('False positive rate',font_x)
+ax1.set_ylabel('True positive rate',font_y)
 
-ax3.set_xticks([0,0.5,1])
-ax3.set_xticklabels(['0','0.5','1'])
-ax3.set_yticks([0,0.5,1])
-ax3.set_yticklabels(['0','0.5','1'])
+ax1.set_xticks([0,0.5,1])
+ax1.set_xticklabels(['0','0.5','1'])
+ax1.set_yticks([0,0.5,1])
+ax1.set_yticklabels(['0','0.5','1'])
 
-ax3.set_title('Predator-prey (transcritical)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
-ax3.text(0.83, 0.75,'(c)',ha='left', transform=ax3.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+ax1.set_title('Predator-prey (transcritical)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax1.text(0.83, 0.75,'(a)',ha='left', transform=ax1.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
 
 ################################################################################################
 
@@ -292,28 +240,28 @@ fpr_dev, tpr_dev, thresholds_dev = roc_curve(label, dev)
 auc_dev = auc(fpr_dev, tpr_dev)
 
 textstr = '\n'.join([
-    r'$\text{A}_{\text{UEWS}} = %.2f$' % auc_dynamics,
+    r'$\text{A}_{\text{DEWS}} = %.2f$' % auc_dynamics,
     r'$\text{A}_{\text{AC}} = %.2f$' % auc_ac,
     r'$\text{A}_{\text{DEV}} = %.2f$' % auc_dev
 ])
 
-ax4.plot(fpr_dynamics, tpr_dynamics, c='crimson',linewidth=2,zorder=3)
-ax4.plot(fpr_ac, tpr_ac, c='darkslateblue',linewidth=2,zorder=2)
-ax4.plot(fpr_dev, tpr_dev, c='darkorange',linewidth=2,zorder=1)
-ax4.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+ax2.plot(fpr_dynamics, tpr_dynamics, c='crimson',linewidth=2,zorder=3)
+ax2.plot(fpr_ac, tpr_ac, c='darkslateblue',linewidth=2,zorder=2)
+ax2.plot(fpr_dev, tpr_dev, c='darkorange',linewidth=2,zorder=1)
+ax2.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
 
-ax4.text(0.08, 0.48, textstr, transform=ax4.transAxes, fontsize=11,
+ax2.text(0.45, 0.35, textstr, transform=ax2.transAxes, fontsize=12,
          verticalalignment='top')
 
-ax4.set_xlabel('False positive rate',font_x)
+ax2.set_xlabel('False positive rate',font_x)
 
-ax4.set_xticks([0,0.5,1])
-ax4.set_xticklabels(['0','0.5','1'])
-ax4.set_yticks([0,0.5,1])
-ax4.set_yticklabels(['0','0.5','1'])
+ax2.set_xticks([0,0.5,1])
+ax2.set_xticklabels(['0','0.5','1'])
+ax2.set_yticks([0,0.5,1])
+ax2.set_yticklabels(['0','0.5','1'])
 
-ax4.set_title('Predator-prey (Hopf)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
-ax4.text(0.83, 0.75,'(d)',ha='left', transform=ax4.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+ax2.set_title('Predator-prey (Hopf)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax2.text(0.83, 0.75,'(b)',ha='left', transform=ax2.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
 
 ################################################################################################
 
@@ -348,14 +296,66 @@ fpr_dev, tpr_dev, thresholds_dev = roc_curve(label, dev)
 auc_dev = auc(fpr_dev, tpr_dev)
 
 textstr = '\n'.join([
-    r'$\text{A}_{\text{UEWS}} = %.2f$' % auc_dynamics,
+    r'$\text{A}_{\text{DEWS}} = %.2f$' % auc_dynamics,
     r'$\text{A}_{\text{AC}} = %.2f$' % auc_ac,
     r'$\text{A}_{\text{DEV}} = %.2f$' % auc_dev
 ])
 
-ax5.plot(fpr_dynamics, tpr_dynamics, c='crimson',linewidth=2,zorder=3)
-ax5.plot(fpr_ac, tpr_ac, c='darkslateblue',linewidth=2,zorder=2)
-ax5.plot(fpr_dev, tpr_dev, c='darkorange',linewidth=2,zorder=1)
+ax3.plot(fpr_dynamics, tpr_dynamics, c='crimson',linewidth=2,zorder=3)
+ax3.plot(fpr_ac, tpr_ac, c='darkslateblue',linewidth=2,zorder=2)
+ax3.plot(fpr_dev, tpr_dev, c='darkorange',linewidth=2,zorder=1)
+ax3.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+
+ax3.text(0.45, 0.35, textstr, transform=ax3.transAxes, fontsize=12,
+         verticalalignment='top',zorder=3)
+
+ax3.set_xlabel('False positive rate',font_x)
+
+ax3.set_xticks([0,0.5,1])
+ax3.set_xticklabels(['0','0.5','1'])
+ax3.set_yticks([0,0.5,1])
+ax3.set_yticklabels(['0','0.5','1'])
+
+ax3.set_title('Epidemic', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax3.text(0.83, 0.75,'(c)',ha='left', transform=ax3.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+
+################################################################################################
+
+textstr = '\n'.join([
+    r'$\text{A}_{\text{DEWS}} = %.2f$' % auc_dynamics_ER,
+    r'$\text{A}_{\text{AC}} = %.2f$' % auc_ac_ER,
+    r'$\text{A}_{\text{DEV}} = %.2f$' % auc_dev_ER
+])
+
+ax4.plot(fpr_dynamics_ER, tpr_dynamics_ER, c='crimson',linewidth=2,zorder=3)
+ax4.plot(fpr_ac_ER, tpr_ac_ER, c='darkslateblue',linewidth=2,zorder=2)
+ax4.plot(fpr_dev_ER, tpr_dev_ER, c='darkorange',linewidth=2,zorder=1)
+ax4.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+
+ax4.text(0.45, 0.35, textstr, transform=ax4.transAxes, fontsize=12,
+         verticalalignment='top')
+
+ax4.set_xlabel('False positive rate',font_x)
+
+ax4.set_xticks([0,0.5,1])
+ax4.set_xticklabels(['0','0.5','1'])
+ax4.set_yticks([0,0.5,1])
+ax4.set_yticklabels(['0','0.5','1'])
+
+ax4.set_title('Mutualistic network (ER)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans', fontstyle= 'italic', y=1.02)
+ax4.text(0.83, 0.75,'(d)',ha='left', transform=ax4.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+
+################################################################################################
+
+textstr = '\n'.join([
+    r'$\text{A}_{\text{DEWS}} = %.2f$' % auc_dynamics_BA,
+    r'$\text{A}_{\text{AC}} = %.2f$' % auc_ac_BA,
+    r'$\text{A}_{\text{DEV}} = %.2f$' % auc_dev_BA
+])
+
+ax5.plot(fpr_dynamics_BA, tpr_dynamics_BA, c='crimson',linewidth=2,zorder=3)
+ax5.plot(fpr_ac_BA, tpr_ac_BA, c='darkslateblue',linewidth=2,zorder=2)
+ax5.plot(fpr_dev_BA, tpr_dev_BA, c='darkorange',linewidth=2,zorder=1)
 ax5.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
 
 ax5.text(0.45, 0.35, textstr, transform=ax5.transAxes, fontsize=12,
@@ -368,7 +368,7 @@ ax5.set_xticklabels(['0','0.5','1'])
 ax5.set_yticks([0,0.5,1])
 ax5.set_yticklabels(['0','0.5','1'])
 
-ax5.set_title('Epidemic', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax5.set_title('Mutualistic network (BA)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
 ax5.text(0.83, 0.75,'(e)',ha='left', transform=ax5.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
 
 ################################################################################################
@@ -395,7 +395,7 @@ fpr_dev_rate, tpr_dev_rate, thresholds_dev_rate = roc_curve(label_steady, dev_ra
 auc_dev_rate = auc(fpr_dev_rate, tpr_dev_rate)
 
 textstr = '\n'.join([
-    r'$\text{A}_{\text{UEWS}} = %.2f$' % auc_dynamics_rate,
+    r'$\text{A}_{\text{DEWS}} = %.2f$' % auc_dynamics_rate,
     r'$\text{A}_{\text{DEV}} = %.2f$' % auc_dev_rate
 ])
 
@@ -423,7 +423,7 @@ legend_ac = mlines.Line2D([], [], color='darkslateblue',linestyle='-',linewidth=
 legend_dev = mlines.Line2D([], [], color='darkorange',linestyle='-',linewidth=3)
 
 fig.legend(handles = [legend_dynamics, legend_ac, legend_dev],
-            labels = ['Universal EWS','Lag-1 AC','Dynamical eigenvalue'],
+            labels = ['Dynamics-based EWS','Lag-1 AC','Dynamical eigenvalue'],
               loc='upper center', bbox_to_anchor=(0.5,1.01), ncol=3, frameon=False, 
               prop=font_manager.FontProperties(family='Arial', size=15))
 
