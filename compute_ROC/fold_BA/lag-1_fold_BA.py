@@ -9,7 +9,7 @@ if not os.path.exists('../../results/ROC/fold_BA/ews'):
 
 length = 1000
 
-train_length = 700 # Length of the rolling window
+train_length = 500 # Length of the rolling window
 test_length = length - train_length
 
 for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:

@@ -11,8 +11,8 @@ if not os.path.exists('../data/sub_hopf/ROC'):
 dt = 0.01
 t0 = 0
 tburn = 500 # burn-in period
-sigma_x = 0.0025 # noise intensity
-sigma_y = 0.0025
+sigma_x = 0.01 # noise intensity
+sigma_y = 0.01
 
 #----------------------------------
 # Simulate model

@@ -21,8 +21,8 @@ def recov_fun(x, b, P):
 
     return P[1] + 2*P[3]*x + P[4]*b + 3*P[5]*x**2 + 2*P[6]*b*x
 
-if not os.path.exists('../results/fold/bif'):
-    os.makedirs('../results/fold/bif')
+if not os.path.exists('../results/analyze_bif/fold/bif'):
+    os.makedirs('../results/analyze_bif/fold/bif')
 
 gap = 5
 
@@ -138,4 +138,4 @@ for random_seed in range(200):
 
     dic_bif = {'Time':Time, 'bif_type':bif_type, 'bif_error':bif_error, 'bif_type_value':bif_type_value}
     csv_out = pd.DataFrame(dic_bif)
-    csv_out.to_csv('../results/fold/bif/bif_out_{}.csv'.format(random_seed),header = True)
+    csv_out.to_csv('../results/analyze_bif/fold/bif/bif_out_{}.csv'.format(random_seed),header = True)

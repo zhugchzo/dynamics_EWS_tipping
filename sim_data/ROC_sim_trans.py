@@ -11,8 +11,8 @@ if not os.path.exists('../data/trans/ROC'):
 dt = 0.01
 t0 = 0
 tburn = 500 # burn-in period
-sigma_x = 0.0025 # noise intensity
-sigma_y = 0.0025
+sigma_x = 0.01 # noise intensity
+sigma_y = 0.01
 
 #----------------------------------
 # Simulate model
@@ -150,7 +150,7 @@ for random_seed in range(200):
         if rrate[i] < 0 and rrate[i+1] > 0:
             rrate_record.append(i+1)
 
-        if x[i] > 2:
+        if x[i] > 10:
             length = i
             break
 

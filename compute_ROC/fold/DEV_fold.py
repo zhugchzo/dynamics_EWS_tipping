@@ -48,7 +48,7 @@ for random_seed in range(200):
 
     DEV_list = list()
 
-    for winstart in range(0,test_length,20):
+    for winstart in range(0,test_length,10):
 
         Y_t = x_tseries[winstart : winstart + train_length]
         Y_tp = x_tseries[winstart + 1 : winstart + 1 + train_length]
@@ -57,7 +57,7 @@ for random_seed in range(200):
 
         DEV_list.append(DEV)
 
-    dic_DEV = {'Time':tseries[train_length - 1 : -1][::20],'DEV':DEV_list}
+    dic_DEV = {'Time':tseries[train_length - 1 : -1][::10],'DEV':DEV_list}
 
     csv_out = pd.DataFrame(dic_DEV)
     csv_out.to_csv('../../results/ROC/fold/ews/DEV_fold_{}.csv'.format(random_seed),header = True)
@@ -76,7 +76,7 @@ for random_seed in range(200):
 
     DEV_list = list()
 
-    for winstart in range(0,test_length,20):
+    for winstart in range(0,test_length,10):
 
         Y_t = x_tseries[winstart : winstart + train_length]
         Y_tp = x_tseries[winstart + 1 : winstart + 1 + train_length]
@@ -85,7 +85,7 @@ for random_seed in range(200):
 
         DEV_list.append(DEV)
 
-    dic_DEV = {'Time':tseries[train_length - 1 : -1][::20],'DEV':DEV_list}
+    dic_DEV = {'Time':tseries[train_length - 1 : -1][::10],'DEV':DEV_list}
 
     csv_out = pd.DataFrame(dic_DEV)
     csv_out.to_csv('../../results/ROC/fold/ews/DEV_fold_null_{}.csv'.format(random_seed),header = True)

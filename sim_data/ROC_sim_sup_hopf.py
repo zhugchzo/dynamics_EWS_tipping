@@ -11,8 +11,8 @@ if not os.path.exists('../data/sup_hopf/ROC'):
 dt = 0.01
 t0 = 0
 tburn = 500 # burn-in period
-sigma_x = 0.0025 # noise intensity
-sigma_y = 0.0025
+sigma_x = 0.01 # noise intensity
+sigma_y = 0.01
 
 #----------------------------------
 # Simulate model
@@ -195,5 +195,3 @@ for random_seed in range(200):
 
     df_temp_c.to_csv(filepath,index=False)
     df_temp_null_c.to_csv(filepath_null,index=False)
-
-

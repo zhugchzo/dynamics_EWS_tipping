@@ -34,6 +34,9 @@ def solve_eval(jac):
     
     return rrate, imag_dom_eval, real_oth_eval, imag_oth_eval
 
+# ridge parameter for regression
+ridge_param = 1e-1
+
 length = 1000
 
 train_length = 500 # Length of the rolling window
@@ -65,9 +68,6 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
         dcop = 3 # x_j, bx_j, x_ix_j
         # total size of feature vector: linear + nonlinear + couple
         dtot = dlin + dnonlin + dcop
-
-        # ridge parameter for regression
-        ridge_param = 1e-5
 
         keep_col_tseries = ['Time','t_diff','B']
 
@@ -355,6 +355,8 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
                     'esti_imag_dom_eval':estimate_imag_dom_eval, 'esti_imag_oth_eval':estimate_imag_oth_eval,
                     'initial_theta':best_initial_theta_list, 'delta_theta':best_delta_theta_list}
         
+        dic_pred = {'esti_rrate':estimate_rrate,'esti_imag_dom_eval':estimate_imag_dom_eval}
+        
         polynomial = ['cte', 'x', 'b', 'x^2', 'bx', 'x^3', 'bx^2', 'x_j', 'bx_j', 'x_ix_j']
         for j in range(dtot + cte):
             dic_pred[polynomial[j]] = W_out_matrix[:,j]
@@ -386,9 +388,6 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
         dcop = 3 # x_j, bx_j, x_ix_j
         # total size of feature vector: linear + nonlinear + couple
         dtot = dlin + dnonlin + dcop
-
-        # ridge parameter for regression
-        ridge_param = 1e-5
 
         keep_col_tseries = ['Time','t_diff']
 

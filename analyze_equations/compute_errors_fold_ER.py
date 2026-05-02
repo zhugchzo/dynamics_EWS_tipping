@@ -9,7 +9,7 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
     for random_seed in range(20):
 
-        file_path = '../results/fold_ER/bif/{}/bif_out_{}.csv'.format(network_size,random_seed)
+        file_path = '../results/analyze_bif/fold_ER/bif/{}/bif_out_{}.csv'.format(network_size,random_seed)
 
         df = pd.read_csv(file_path, na_values=['NA'])
 
@@ -56,4 +56,4 @@ stats_df = pd.DataFrame({
     'bif_type_value_mean': bif_type_value_mean
 })
 
-stats_df.to_csv('../results/fold_ER/bif_output.csv', index=False)
+stats_df.to_csv('../results/analyze_bif/fold_ER/bif_output.csv', index=False)

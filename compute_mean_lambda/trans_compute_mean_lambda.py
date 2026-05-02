@@ -1,6 +1,33 @@
 import pandas as pd
 import numpy as np
 
+def robust_mean_iqr(row):
+    q1 = row.quantile(0.1)
+    q3 = row.quantile(0.9)
+    iqr = q3 - q1
+    lower = q1 - 1.5 * iqr
+    upper = q3 + 1.5 * iqr
+    row_filtered = row[(row >= lower) & (row <= upper)]
+    return row_filtered.mean()
+
+def robust_std_iqr(row):
+    q1 = row.quantile(0.1)
+    q3 = row.quantile(0.9)
+    iqr = q3 - q1
+    lower = q1 - 1.5 * iqr
+    upper = q3 + 1.5 * iqr
+    row_filtered = row[(row >= lower) & (row <= upper)]
+    return row_filtered.std(ddof=1)
+
+def robust_count_iqr(row):
+    q1 = row.quantile(0.1)
+    q3 = row.quantile(0.9)
+    iqr = q3 - q1
+    lower = q1 - 1.5 * iqr
+    upper = q3 + 1.5 * iqr
+    row_filtered = row[(row >= lower) & (row <= upper)]
+    return row_filtered.count()
+
 df_esti_re_sum = pd.DataFrame()
 df_esti_im_sum = pd.DataFrame()
 
@@ -13,16 +40,16 @@ for random_seed in range(200):
     df_esti_im_sum = pd.concat([df_esti_im_sum.reset_index(drop=True),df_esti_im.reset_index(drop=True)], axis=1)
 
 # 按行均值
-esti_re_mean = df_esti_re_sum.mean(axis=1)
-esti_im_mean = df_esti_im_sum.mean(axis=1)
+esti_re_mean = df_esti_re_sum.apply(robust_mean_iqr, axis=1)
+esti_im_mean = df_esti_im_sum.apply(robust_mean_iqr, axis=1)
 
 # 按行标准差
-esti_re_std = df_esti_re_sum.std(axis=1, ddof=1)
-esti_im_std = df_esti_im_sum.std(axis=1, ddof=1)
+esti_re_std = df_esti_re_sum.apply(robust_std_iqr, axis=1)
+esti_im_std = df_esti_im_sum.apply(robust_std_iqr, axis=1)
 
 # 每行有效样本数
-n_re = df_esti_re_sum.count(axis=1)
-n_im = df_esti_im_sum.count(axis=1)
+n_re = df_esti_re_sum.apply(robust_count_iqr, axis=1)
+n_im = df_esti_im_sum.apply(robust_count_iqr, axis=1)
 
 # 95% 置信区间半宽
 esti_re_ci = 1.96 * esti_re_std / np.sqrt(n_re)

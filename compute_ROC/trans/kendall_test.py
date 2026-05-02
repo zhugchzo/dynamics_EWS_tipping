@@ -91,9 +91,3 @@ csv_out_null = pd.DataFrame(dic_tau_null)
 
 csv_out.to_csv('../../results/ROC/trans/DEV_tau.csv',header = True)
 csv_out_null.to_csv('../../results/ROC/trans/DEV_tau_null.csv',header = True)
-
-
-
-
-
-

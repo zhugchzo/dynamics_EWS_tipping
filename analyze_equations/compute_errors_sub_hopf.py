@@ -7,7 +7,7 @@ time = None
 
 for random_seed in range(200):
 
-    file_path = '../results/sub_hopf/bif/bif_out_{}.csv'.format(random_seed)
+    file_path = '../results/analyze_bif/sub_hopf/bif/bif_out_{}.csv'.format(random_seed)
 
     df = pd.read_csv(file_path, na_values=['NA'])
 
@@ -54,4 +54,4 @@ stats_df = pd.DataFrame({
     'bif_type_value_mean': bif_type_value_mean
 })
 
-stats_df.to_csv('../results/sub_hopf/bif_output.csv', index=False)
+stats_df.to_csv('../results/analyze_bif/sub_hopf/bif_output.csv', index=False)

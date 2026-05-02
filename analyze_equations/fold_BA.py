@@ -61,8 +61,8 @@ gap = 5
 
 for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
-    if not os.path.exists('../results/fold_BA/bif/{}'.format(network_size)):
-        os.makedirs('../results/fold_BA/bif/{}'.format(network_size))
+    if not os.path.exists('../results/analyze_bif/fold_BA/bif/{}'.format(network_size)):
+        os.makedirs('../results/analyze_bif/fold_BA/bif/{}'.format(network_size))
 
     for random_seed in range(20):
 
@@ -194,4 +194,4 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
         dic_bif = {'Time':Time, 'bif_type':bif_type, 'bif_error':bif_error, 'bif_type_value':bif_type_value}
         csv_out = pd.DataFrame(dic_bif)
-        csv_out.to_csv('../results/fold_BA/bif/{}/bif_out_{}.csv'.format(network_size,random_seed),header = True)
+        csv_out.to_csv('../results/analyze_bif/fold_BA/bif/{}/bif_out_{}.csv'.format(network_size,random_seed),header = True)

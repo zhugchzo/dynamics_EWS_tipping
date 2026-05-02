@@ -205,7 +205,7 @@ ax1.set_yticks([0,0.5,1])
 ax1.set_yticklabels(['0','0.5','1'])
 
 ax1.set_title('Predator-prey (transcritical)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
-ax1.text(0.83, 0.75,'(a)',ha='left', transform=ax1.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+ax1.text(0.85, 0.75,'(a)',ha='left', transform=ax1.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
 
 ################################################################################################
 
@@ -261,7 +261,7 @@ ax2.set_yticks([0,0.5,1])
 ax2.set_yticklabels(['0','0.5','1'])
 
 ax2.set_title('Predator-prey (Hopf)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
-ax2.text(0.83, 0.75,'(b)',ha='left', transform=ax2.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+ax2.text(0.85, 0.75,'(b)',ha='left', transform=ax2.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
 
 ################################################################################################
 
@@ -317,7 +317,7 @@ ax3.set_yticks([0,0.5,1])
 ax3.set_yticklabels(['0','0.5','1'])
 
 ax3.set_title('Epidemic', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
-ax3.text(0.83, 0.75,'(c)',ha='left', transform=ax3.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+ax3.text(0.85, 0.75,'(c)',ha='left', transform=ax3.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
 
 ################################################################################################
 
@@ -343,7 +343,7 @@ ax4.set_yticks([0,0.5,1])
 ax4.set_yticklabels(['0','0.5','1'])
 
 ax4.set_title('Mutualistic network (ER)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans', fontstyle= 'italic', y=1.02)
-ax4.text(0.83, 0.75,'(d)',ha='left', transform=ax4.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+ax4.text(0.85, 0.75,'(d)',ha='left', transform=ax4.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
 
 ################################################################################################
 
@@ -369,7 +369,7 @@ ax5.set_yticks([0,0.5,1])
 ax5.set_yticklabels(['0','0.5','1'])
 
 ax5.set_title('Mutualistic network (BA)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
-ax5.text(0.83, 0.75,'(e)',ha='left', transform=ax5.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+ax5.text(0.85, 0.75,'(e)',ha='left', transform=ax5.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
 
 ################################################################################################
 
@@ -414,13 +414,13 @@ ax6.set_yticks([0,0.5,1])
 ax6.set_yticklabels(['0','0.5','1'])
 
 ax6.set_title('Classification', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
-ax6.text(0.83, 0.75,'(f)',ha='left', transform=ax6.transAxes,fontdict={'family':'Arial','size':18,'weight':'normal'})
+ax6.text(0.85, 0.75,'(f)',ha='left', transform=ax6.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
 
 ################################################################################################
 
-legend_dynamics = mlines.Line2D([], [], color='crimson',linestyle='-',linewidth=3)
-legend_ac = mlines.Line2D([], [], color='darkslateblue',linestyle='-',linewidth=3)
-legend_dev = mlines.Line2D([], [], color='darkorange',linestyle='-',linewidth=3)
+legend_dynamics = mlines.Line2D([], [], color='crimson',linestyle='-',linewidth=4)
+legend_ac = mlines.Line2D([], [], color='darkslateblue',linestyle='-',linewidth=4)
+legend_dev = mlines.Line2D([], [], color='darkorange',linestyle='-',linewidth=4)
 
 fig.legend(handles = [legend_dynamics, legend_ac, legend_dev],
             labels = ['Dynamics-based EWS','Lag-1 AC','Dynamical eigenvalue'],

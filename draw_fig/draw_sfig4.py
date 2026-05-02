@@ -19,7 +19,7 @@ fig, axs = plt.subplots(2, 1, figsize=(11,16))
 df = pandas.read_csv('../data/fold/fold.csv')
 df_sindy_results = pandas.read_csv('../results/mean_lambda/fold_SINDy_mean_lambda.csv')
 
-truncate_length = 1180
+truncate_length = 1185
 
 t1 = df['Time'][:truncate_length] + 1
 t2 = df_sindy_results['Time'] + 501
@@ -38,11 +38,11 @@ ax1.scatter(t1[train_length:length][::5],x[train_length:length][::5],s=40,c='dar
 ax1.plot(t1[train_length:length][::5],x[train_length:length][::5],c='darkgrey',linewidth=3)
 ax1.scatter(1000,x[1000],s=500, marker='o',facecolors='white', edgecolors='black',linewidths=3,zorder=5)
 ax1.set_ylabel('System state',font_y)
-ax1.yaxis.set_label_coords(-0.1, 0.5)
-ax1.set_xlim(-60,1200)
-ax1.set_ylim(-0.1,9)
-ax1.set_yticks([1,8])
-ax1.set_yticklabels(['1','8'])
+ax1.yaxis.set_label_coords(-0.15, 0.5)
+ax1.set_xlim(-50,1220)
+ax1.set_ylim(-1,9)
+ax1.set_yticks([0,4,8])
+ax1.set_yticklabels(['0','4','8'])
 ax1.tick_params(axis='x', bottom=False, labelbottom=False)
 ax1.tick_params(direction='in', length=10)
 ax1.minorticks_on()
@@ -67,15 +67,15 @@ ax1.text(240,5.3,r'$L$', fontsize=40, ha='center', va='center', color='black')
 # ax2.scatter(t2,sindy_esti_rrate,s=80,marker='o',facecolors='none',edgecolors='crimson',zorder=5)
 ax2.plot(t2,sindy_esti_rrate,c='crimson',linewidth=6,alpha=0.9,zorder=2)
 ax2.fill_between(t2,sindy_esti_re_lower,sindy_esti_re_upper,color='crimson',alpha=0.3,linewidth=0,zorder=2)
-ax2.set_xlabel('Timepoint',font_x)
+ax2.set_xlabel('Time',font_x,labelpad=15)
 ax2.set_ylabel('Re',font_y)
-ax2.yaxis.set_label_coords(-0.1, 0.5)
-ax2.set_xlim(-60,1200)
+ax2.yaxis.set_label_coords(-0.15, 0.5)
+ax2.set_xlim(-50,1220)
 ax2.set_xticks([0,500,1000])
 ax2.set_xticklabels(['0','500','1000'])
-ax2.set_ylim(-0.45,0.045)
-ax2.set_yticks([-0.4,0])
-ax2.set_yticklabels(['-0.4','0'])
+ax2.set_ylim(-0.48,0.048)
+ax2.set_yticks([-0.4,-0.2,0])
+ax2.set_yticklabels(['-0.4','-0.2','0'])
 ax2.tick_params(axis='x', pad=10)
 ax2.tick_params(direction='in', length=10)
 ax2.minorticks_on()
@@ -92,9 +92,9 @@ legend_bif = mlines.Line2D([], [], linestyle='None', marker='o',markerfacecolor=
 legend_esti_re = mlines.Line2D([], [], color='crimson', linestyle='-',linewidth=6,alpha=0.9)
 
 fig.legend(handles = [legend_state, legend_pstate, legend_bif, legend_esti_re],
-            labels = ['State','Forecast interval','Bifurcation point', 'Estimated Re (SINDy)'],
+            labels = ['State','Forecast regime','Bifurcation point', 'Estimated Re (SINDy)'],
               loc='upper center', bbox_to_anchor=(0.5,1.01), ncol=2, frameon=False, 
-              prop=font_manager.FontProperties(family='Arial', size=25, weight='normal'),handletextpad=0.4)
+              prop=font_manager.FontProperties(family='Arial', size=25, weight='normal'))
 
-plt.subplots_adjust(top=0.9, bottom=0.08, left=0.15, right=0.98, hspace=0.15)
+plt.subplots_adjust(top=0.9, bottom=0.08, left=0.18, right=0.98, hspace=0.15)
 plt.savefig('../figures/SFIG4.pdf',format='pdf')

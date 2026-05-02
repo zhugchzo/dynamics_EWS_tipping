@@ -33,7 +33,7 @@ def smap(X, Y, theta=0.5):
 
 length = 1000
 
-train_length = 900 # Length of the rolling window
+train_length = 800 # Length of the rolling window
 test_length = length - train_length
 
 for random_seed in range(200):
@@ -51,7 +51,7 @@ for random_seed in range(200):
     DEV_list = list()
     imag_list = list()
 
-    for winstart in range(0,test_length,4):
+    for winstart in range(0,test_length,10):
 
         Y_t = x_tseries[winstart : winstart + train_length]
         Y_tp = x_tseries[winstart + 1 : winstart + 1 + train_length]
@@ -75,7 +75,7 @@ for random_seed in range(200):
         DEV_list.append(DEV)
         imag_list.append(Im)
 
-    dic_DEV = {'Time':tseries[train_length - 1 : -1][::4],'DEV':DEV_list, 'imag':imag_list}
+    dic_DEV = {'Time':tseries[train_length - 1 : -1][::10],'DEV':DEV_list, 'imag':imag_list}
 
     csv_out = pd.DataFrame(dic_DEV)
     csv_out.to_csv('../../results/ROC/trans/ews/DEV_trans_{}.csv'.format(random_seed),header = True)
@@ -97,7 +97,7 @@ for random_seed in range(200):
     DEV_list = list()
 
 
-    for winstart in range(0,test_length,4):
+    for winstart in range(0,test_length,10):
 
         Y_t = x_tseries[winstart : winstart + train_length]
         Y_tp = x_tseries[winstart + 1 : winstart + 1 + train_length]
@@ -116,7 +116,7 @@ for random_seed in range(200):
 
         DEV_list.append(DEV)
 
-    dic_DEV = {'Time':tseries[train_length - 1 : -1][::4],'DEV':DEV_list}
+    dic_DEV = {'Time':tseries[train_length - 1 : -1][::10],'DEV':DEV_list}
 
     csv_out = pd.DataFrame(dic_DEV)
     csv_out.to_csv('../../results/ROC/trans/ews/DEV_trans_null_{}.csv'.format(random_seed),header = True)

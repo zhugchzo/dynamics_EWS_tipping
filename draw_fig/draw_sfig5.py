@@ -187,12 +187,12 @@ ax4.text(0.1, 0.8, f'$R^2 = {sub_hopf_r2:.2f}$', transform=ax4.transAxes, fontsi
 ax4.spines['right'].set_visible(False)
 ax4.spines['top'].set_visible(False)
 
-ax4.set_xlim(-0.264,0.0264)
-ax4.set_xticks([-0.24,0])
-ax4.set_xticklabels(['-0.24','0'])
-ax4.set_ylim(-0.264,0.0264)
-ax4.set_yticks([-0.24,0])
-ax4.set_yticklabels(['-0.24','0'])
+ax4.set_xlim(-0.319,0.0319)
+ax4.set_xticks([-0.29,0])
+ax4.set_xticklabels(['-0.29','0'])
+ax4.set_ylim(-0.319,0.0319)
+ax4.set_yticks([-0.29,0])
+ax4.set_yticklabels(['-0.29','0'])
 
 ax4.text(-0.25,1.1,'(d)',ha='left', transform=ax4.transAxes,fontdict={'family':'Arial','size':50,'weight':'normal'})
 
@@ -298,12 +298,12 @@ ax7.text(0.1, 0.8, f'$R^2 = {sup_hopf_r2:.2f}$', transform=ax7.transAxes, fontsi
 ax7.spines['right'].set_visible(False)
 ax7.spines['top'].set_visible(False)
 
-ax7.set_xlim(0.113,0.137)
-ax7.set_xticks([0.115,0.135])
-ax7.set_xticklabels(['0.115','0.135'])
-ax7.set_ylim(0.113,0.137)
-ax7.set_yticks([0.115,0.135])
-ax7.set_yticklabels(['0.115','0.135'])
+ax7.set_xlim(0.111,0.137)
+ax7.set_xticks([0.113,0.135])
+ax7.set_xticklabels(['0.113','0.135'])
+ax7.set_ylim(0.111,0.137)
+ax7.set_yticks([0.113,0.135])
+ax7.set_yticklabels(['0.113','0.135'])
 
 ax7.text(-0.25,1.1,'(g)',ha='left', transform=ax7.transAxes,fontdict={'family':'Arial','size':50,'weight':'normal'})
 

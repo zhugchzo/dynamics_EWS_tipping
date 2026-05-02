@@ -34,10 +34,14 @@ def solve_eval(jac):
     
     return rrate, imag_dom_eval, real_oth_eval, imag_oth_eval
 
+# ridge parameter for regression
+ridge_param = 1e-3
+
 length = 1000
 
 train_length = 500 # Length of the rolling window
 test_length = length - train_length
+
 
 for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
@@ -65,9 +69,6 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
         dcop = 3 # x_j, bx_j, x_ix_j
         # total size of feature vector: linear + nonlinear + couple
         dtot = dlin + dnonlin + dcop
-
-        # ridge parameter for regression
-        ridge_param = 1e-5
 
         keep_col_tseries = ['Time','t_diff','epsl']
 
@@ -351,7 +352,7 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
             i += 1
 
         dic_pred = {'Time':tseries[train_length - 1 : -1], 'b_param':b_tseries[train_length - 1 : -1],'traj_x':x_mean[train_length - 1 : -1],
-                     'esti_rrate':estimate_rrate, 'esti_real_oth_eval':estimate_real_oth_eval,
+                    'esti_rrate':estimate_rrate, 'esti_real_oth_eval':estimate_real_oth_eval,
                     'esti_imag_dom_eval':estimate_imag_dom_eval, 'esti_imag_oth_eval':estimate_imag_oth_eval,
                     'initial_theta':best_initial_theta_list, 'delta_theta':best_delta_theta_list}
 
@@ -361,6 +362,7 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
         csv_out = pd.DataFrame(dic_pred)
         csv_out.to_csv('../../results/ROC/fold_ER/ews/{}/dynamics_fold_ER_{}.csv'.format(network_size,random_seed),header = True)
+
 
 
 for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
@@ -386,9 +388,6 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
         dcop = 3 # x_j, bx_j, x_ix_j
         # total size of feature vector: linear + nonlinear + couple
         dtot = dlin + dnonlin + dcop
-
-        # ridge parameter for regression
-        ridge_param = 1e-5
 
         keep_col_tseries = ['Time','t_diff']
 

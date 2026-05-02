@@ -1,6 +1,33 @@
 import pandas as pd
 import numpy as np
 
+def robust_mean_iqr(row):
+    q1 = row.quantile(0.1)
+    q3 = row.quantile(0.9)
+    iqr = q3 - q1
+    lower = q1 - 1.5 * iqr
+    upper = q3 + 1.5 * iqr
+    row_filtered = row[(row >= lower) & (row <= upper)]
+    return row_filtered.mean()
+
+def robust_std_iqr(row):
+    q1 = row.quantile(0.1)
+    q3 = row.quantile(0.9)
+    iqr = q3 - q1
+    lower = q1 - 1.5 * iqr
+    upper = q3 + 1.5 * iqr
+    row_filtered = row[(row >= lower) & (row <= upper)]
+    return row_filtered.std(ddof=1)
+
+def robust_count_iqr(row):
+    q1 = row.quantile(0.1)
+    q3 = row.quantile(0.9)
+    iqr = q3 - q1
+    lower = q1 - 1.5 * iqr
+    upper = q3 + 1.5 * iqr
+    row_filtered = row[(row >= lower) & (row <= upper)]
+    return row_filtered.count()
+
 df_esti_re1_sum = pd.DataFrame()
 df_esti_re2_sum = pd.DataFrame()
 df_esti_im1_sum = pd.DataFrame()
@@ -29,7 +56,7 @@ esti_re2_mean = df_esti_re2_sum.mean(axis=1)
 esti_im1_mean = df_esti_im1_sum.mean(axis=1)
 esti_im2_mean = df_esti_im2_sum.mean(axis=1)
 
-esti_stable_mean = df_esti_stable_sum.mean(axis=1)
+esti_stable_mean = df_esti_stable_sum.apply(robust_mean_iqr, axis=1)
 
 # 按行标准差
 esti_re1_std = df_esti_re1_sum.std(axis=1, ddof=1)
@@ -37,7 +64,7 @@ esti_re2_std = df_esti_re2_sum.std(axis=1, ddof=1)
 esti_im1_std = df_esti_im1_sum.std(axis=1, ddof=1)
 esti_im2_std = df_esti_im2_sum.std(axis=1, ddof=1)
 
-esti_stable_std = df_esti_stable_sum.std(axis=1, ddof=1)
+esti_stable_std = df_esti_stable_sum.apply(robust_std_iqr, axis=1)
 
 # 每行有效样本数
 n_re1 = df_esti_re1_sum.count(axis=1)
@@ -45,7 +72,7 @@ n_re2 = df_esti_re2_sum.count(axis=1)
 n_im1 = df_esti_im1_sum.count(axis=1)
 n_im2 = df_esti_im2_sum.count(axis=1)
 
-n_stable = df_esti_stable_sum.count(axis=1)
+n_stable = df_esti_stable_sum.apply(robust_count_iqr, axis=1)
 
 # 95% 置信区间半宽
 esti_re1_ci = 1.96 * esti_re1_std / np.sqrt(n_re1)
