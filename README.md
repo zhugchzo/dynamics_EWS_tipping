@@ -1,8 +1,8 @@
-# Detecting Regime Shifts from Dynamics Using Early Warning Signals
+# Detecting regime shifts from dynamics using early warning signals
 
 This is the code repository to accompnay the article:
 
-***Detecting Regime Shifts from Dynamics Using Early Warning Signals.*** *Chengzuo Zhuge, Ziting Luo, Wei Chen.*
+***Detecting regime shifts from dynamics using early warning signals.*** *Chengzuo Zhuge, Ziting Luo, Wei Chen.*
 
 # Requirements
 
