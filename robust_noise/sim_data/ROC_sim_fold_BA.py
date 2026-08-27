@@ -16,27 +16,87 @@ sigma = 0.01
 
 # Network
 
-def ba_network(n, m0, m):
-    # 创建一个初始的完全图（包含m0个节点）
-    g = nx.complete_graph(m0)
-    
-    # 更新节点度数
-    degrees = {node: m0 - 1 for node in g.nodes}
-    
-    # 添加新节点直到网络达到n个节点
+def ba_network(n,m0,m,direction='new_to_old',seed=None):
+
+    if n < m0:
+        raise ValueError('需要满足 n >= m0')
+
+    if m0 < 2:
+        raise ValueError('m0 至少为 2')
+
+    if not 1 <= m <= m0:
+        raise ValueError('需要满足 1 <= m <= m0')
+
+    if direction not in {
+        'new_to_old',
+        'old_to_new',
+        'random'
+    }:
+        raise ValueError(
+            'direction 必须是 new_to_old、old_to_new 或 random'
+        )
+
+    rng = np.random.default_rng(seed)
+
+    # 初始完全有向图：
+    # 任意两个不同节点之间都有两个方向的边
+    g = nx.DiGraph()
+    g.add_nodes_from(range(m0))
+
+    for u in range(m0):
+        for v in range(m0):
+            if u != v:
+                g.add_edge(u, v)
+
+    # 用总度数 = 入度 + 出度作为优先连接权重
+    degrees = {
+        node: g.in_degree(node) + g.out_degree(node)
+        for node in g.nodes()
+    }
+
     for new_node in range(m0, n):
-        # 计算连接概率
-        total_degree = sum(degrees.values())
-        probs = np.array([degrees[node] / total_degree for node in g.nodes])
-        
-        # 根据概率选择连接的m个节点
-        chosen_nodes = np.random.choice(list(g.nodes), size=m, p=probs)
-        
-        # 新节点与选择的节点建立连接
-        for node in chosen_nodes:
-            g.add_edge(new_node, node)
-            degrees[new_node] = degrees.get(new_node, 0) + 1  # 更新新节点度数
-            degrees[node] += 1  # 更新已连接节点的度数
+        existing_nodes = np.array(
+            list(g.nodes()),
+            dtype=int
+        )
+
+        degree_values = np.array(
+            [degrees[node] for node in existing_nodes],
+            dtype=float
+        )
+
+        # 优先连接概率
+        probabilities = degree_values / degree_values.sum()
+
+        # 不重复选择，保证新节点连接 m 个不同旧节点
+        chosen_nodes = rng.choice(
+            existing_nodes,
+            size=m,
+            replace=False,
+            p=probabilities
+        )
+
+        g.add_node(new_node)
+        degrees[new_node] = 0
+
+        for old_node in chosen_nodes:
+            old_node = int(old_node)
+
+            if direction == 'new_to_old':
+                g.add_edge(new_node, old_node)
+
+            elif direction == 'old_to_new':
+                g.add_edge(old_node, new_node)
+
+            else:
+                if rng.random() < 0.5:
+                    g.add_edge(new_node, old_node)
+                else:
+                    g.add_edge(old_node, new_node)
+
+            # 每加入一条有向边，两个端点的总度数都增加 1
+            degrees[new_node] += 1
+            degrees[old_node] += 1
 
     return g
 

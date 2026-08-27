@@ -31,7 +31,7 @@ length = 842
 
 ax1.scatter(t1[::5],x[::5],s=25,c='darkslateblue',marker='o')
 ax1.plot(t1[::5],x[::5],c='darkslateblue',linewidth=3)
-ax1.scatter(t1[train_length:length][::5],x[train_length:length][::5],s=25,c='darkgrey',marker='o')
+ax1.scatter(t1[train_length:length][::5],x[train_length:length][::5],s=25,c='darkgrey',marker='o',zorder=4)
 ax1.plot(t1[train_length:length][::5],x[train_length:length][::5],c='darkgrey',linewidth=3)
 ax1.scatter(t1[1209],x[1209],s=500, marker='o',facecolors='white', edgecolors='black',linewidths=3,zorder=5)
 ax1.set_ylabel('Light attenuation coefficient (m$^{-1}$)',font_y1)
@@ -88,7 +88,7 @@ ax1.text(t1[245],104,r'$L$', fontsize=40, ha='center', va='center', color='black
 legend_state = mlines.Line2D([], [], color='darkslateblue', marker='o', markersize=6, linestyle='-', linewidth=5)
 legend_pstate = mlines.Line2D([], [], color='darkgrey', marker='o', markersize=6, linestyle='-', linewidth=5)
 
-ax1.legend(handles=[legend_state,legend_pstate],labels=['Population','Forecast regime'],loc='lower center', frameon=False, bbox_to_anchor=(0.65, 0.05), handlelength=1.5,handletextpad=0.2,markerscale=2.5,prop={'size':36})
+ax1.legend(handles=[legend_state,legend_pstate],labels=['Abundance','Forecast regime'],loc='lower center', frameon=False, bbox_to_anchor=(0.65, 0.05), handlelength=1.5,handletextpad=0.2,markerscale=2.5,prop={'size':36})
 
 ax2.scatter(t2,rrate,s=150,color='crimson',marker='o',edgecolor=None,alpha=0.2,zorder=5)
 ax2.scatter(t2,rrate,s=150,marker='o',facecolors='none',edgecolors='crimson',zorder=5)

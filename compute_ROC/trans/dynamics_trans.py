@@ -59,7 +59,7 @@ dnonlin = dnonlin_2 + dnonlin_3
 dtot = dlin + dnonlin
 
 # ridge parameter for regression
-ridge_param = 1e-3
+ridge_param = 1e-2
 
 for random_seed in range(200):
 
@@ -252,7 +252,7 @@ for random_seed in range(200):
         out_train_t = out_train[:,-1]
 
         # ridge regression: train W_out to map out_train to x[t+1] - x[t]
-        W_out = (x[0:d,winstart + 1:winstart + train_length + 1] - x[0:d,winstart:winstart + train_length]) @ out_train[:,:].T @ np.linalg.pinv(out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte))
+        W_out = (x[0:d,winstart + 1:winstart + train_length + 1] - x[0:d,winstart:winstart + train_length])/dt @ out_train[:,:].T @ np.linalg.pinv(out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte))
                 
         W_out_matrix_x[i,:] = W_out[0,:]
         W_out_matrix_y[i,:] = W_out[1,:]
@@ -477,8 +477,8 @@ for random_seed in range(200):
         out_train_t = out_train[:,-1]
 
         # ridge regression: train W_out to map out_train to x[t+1] - x[t]
-        W_out = (x[0:d,winstart + 1:winstart + train_length + 1] - x[0:d,winstart:winstart + train_length]) @ out_train[:,:].T @ np.linalg.pinv(out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte))
-                
+        W_out = (x[0:d,winstart + 1:winstart + train_length + 1] - x[0:d,winstart:winstart + train_length])/dt @ out_train[:,:].T @ np.linalg.pinv(out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte))
+
         W_out_matrix_x[i,:] = W_out[0,:]
         W_out_matrix_y[i,:] = W_out[1,:]
 

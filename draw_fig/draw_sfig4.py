@@ -1,100 +1,93 @@
-import pandas
-import matplotlib.pyplot as plt
-from matplotlib.patches import FancyArrowPatch
-import matplotlib.lines as mlines
-from matplotlib import font_manager
+from pypdf import PdfReader, PdfWriter
+from pypdf._page import PageObject
 
-font_x = {'family':'Arial','weight':'normal','size': 40}
-font_y = {'family':'Arial','weight':'normal','size': 40}
 
-plt.rcParams['font.family'] = 'Arial'
-plt.rcParams['axes.labelweight'] = 'normal'
-plt.rcParams['xtick.labelsize'] = 36
-plt.rcParams['ytick.labelsize'] = 36
+def merge_horizontal(page1, page2):
+    """两个 PDF 页面横向拼接，不缩放"""
+    
+    w1, h1 = float(page1.mediabox.width), float(page1.mediabox.height)
+    w2, h2 = float(page2.mediabox.width), float(page2.mediabox.height)
 
-fig, axs = plt.subplots(2, 1, figsize=(11,16))
+    width = w1 + w2
+    height = max(h1, h2)
 
-(ax1, ax2) = axs.flatten()
+    new_page = PageObject.create_blank_page(
+        width=width,
+        height=height
+    )
 
-df = pandas.read_csv('../data/fold/fold.csv')
-df_sindy_results = pandas.read_csv('../results/mean_lambda/fold_SINDy_mean_lambda.csv')
+    # 左
+    new_page.merge_translated_page(
+        page1,
+        tx=0,
+        ty=0
+    )
 
-truncate_length = 1185
+    # 右
+    new_page.merge_translated_page(
+        page2,
+        tx=w1,
+        ty=0
+    )
 
-t1 = df['Time'][:truncate_length] + 1
-t2 = df_sindy_results['Time'] + 501
+    return new_page
 
-x = df['traj_x'][:truncate_length]
-sindy_esti_rrate = df_sindy_results['esti_mean']
-sindy_esti_re_lower = df_sindy_results['esti_ci_lower']
-sindy_esti_re_upper = df_sindy_results['esti_ci_upper']
 
-train_length = 500
-length = 1000
+# =========================
+# 读取四个 PDF
+# =========================
 
-ax1.scatter(t1[::5],x[::5],s=40,c='darkslateblue',marker='o')
-ax1.plot(t1[::5],x[::5],c='darkslateblue',linewidth=3)
-ax1.scatter(t1[train_length:length][::5],x[train_length:length][::5],s=40,c='darkgrey',marker='o')
-ax1.plot(t1[train_length:length][::5],x[train_length:length][::5],c='darkgrey',linewidth=3)
-ax1.scatter(1000,x[1000],s=500, marker='o',facecolors='white', edgecolors='black',linewidths=3,zorder=5)
-ax1.set_ylabel('System state',font_y)
-ax1.yaxis.set_label_coords(-0.15, 0.5)
-ax1.set_xlim(-50,1220)
-ax1.set_ylim(-1,9)
-ax1.set_yticks([0,4,8])
-ax1.set_yticklabels(['0','4','8'])
-ax1.tick_params(axis='x', bottom=False, labelbottom=False)
-ax1.tick_params(direction='in', length=10)
-ax1.minorticks_on()
-ax1.tick_params(axis='x', which='minor', bottom=False)
-ax1.tick_params(axis='y', which='minor', direction='in', length=5)
-# ax1.text(850,3.7,'fold',size=40)
-ax1.text(0.06,0.93,'(a)',ha='left', transform=ax1.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
-ax1.axvline(x=0, color='black', linestyle='--', linewidth=2,alpha=0.5, zorder=0)
-ax1.axvline(x=500, color='black', linestyle='--', linewidth=2,alpha=0.5, zorder=0)
+page1 = PdfReader('../figures/SFIG4.1.pdf').pages[0]
+page2 = PdfReader('../figures/SFIG4.2.pdf').pages[0]
+page3 = PdfReader('../figures/SFIG4.3.pdf').pages[0]
+page4 = PdfReader('../figures/SFIG4.4.pdf').pages[0]
 
-ax1.plot([15, 484], [6, 6], linestyle='--', color='black', linewidth=2)
-arrow1 = FancyArrowPatch((5, 6), (494, 6), 
-                        arrowstyle='<|-|>', 
-                        color='black',
-                        linewidth = 0, 
-                        mutation_scale=30)
-ax1.add_patch(arrow1)
 
-ax1.text(240,5.3,r'$L$', fontsize=40, ha='center', va='center', color='black')
+# =========================
+# 第一行：14.1 + 14.2
+# 第二行：14.3 + 14.4
+# =========================
 
-# ax2.scatter(t2,sindy_esti_rrate,s=80,color='crimson',marker='o',edgecolor=None,alpha=0.3,zorder=5)
-# ax2.scatter(t2,sindy_esti_rrate,s=80,marker='o',facecolors='none',edgecolors='crimson',zorder=5)
-ax2.plot(t2,sindy_esti_rrate,c='crimson',linewidth=6,alpha=0.9,zorder=2)
-ax2.fill_between(t2,sindy_esti_re_lower,sindy_esti_re_upper,color='crimson',alpha=0.3,linewidth=0,zorder=2)
-ax2.set_xlabel('Time',font_x,labelpad=15)
-ax2.set_ylabel('Re',font_y)
-ax2.yaxis.set_label_coords(-0.15, 0.5)
-ax2.set_xlim(-50,1220)
-ax2.set_xticks([0,500,1000])
-ax2.set_xticklabels(['0','500','1000'])
-ax2.set_ylim(-0.48,0.048)
-ax2.set_yticks([-0.4,-0.2,0])
-ax2.set_yticklabels(['-0.4','-0.2','0'])
-ax2.tick_params(axis='x', pad=10)
-ax2.tick_params(direction='in', length=10)
-ax2.minorticks_on()
-ax2.tick_params(axis='x', which='minor', bottom=False)
-ax2.tick_params(axis='y', which='minor', direction='in', length=5)
-ax2.text(0.06,0.93,'(b)',ha='left', transform=ax2.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
-ax2.axvline(x=500, color='black', linestyle='--',alpha=0.5, linewidth=2)
-ax2.hlines(y=0, xmin=500, xmax=1150, color='grey', linestyle='--', linewidth=4, alpha=0.5, zorder=0)
+row1 = merge_horizontal(page1, page2)
+row2 = merge_horizontal(page3, page4)
 
-legend_state = mlines.Line2D([], [], color='darkslateblue', linestyle='-',marker='o', linewidth=3, markersize=15)
-legend_pstate = mlines.Line2D([], [], color='darkgrey', linestyle='-',marker='o', linewidth=3, markersize=15)
-legend_bif = mlines.Line2D([], [], linestyle='None', marker='o',markerfacecolor='white', markeredgecolor='black',
-    markersize=20, markeredgewidth=3)
-legend_esti_re = mlines.Line2D([], [], color='crimson', linestyle='-',linewidth=6,alpha=0.9)
 
-fig.legend(handles = [legend_state, legend_pstate, legend_bif, legend_esti_re],
-            labels = ['State','Forecast regime','Bifurcation point', 'Estimated Re (SINDy)'],
-              loc='upper center', bbox_to_anchor=(0.5,1.01), ncol=2, frameon=False, 
-              prop=font_manager.FontProperties(family='Arial', size=25, weight='normal'))
+# =========================
+# 两行纵向拼接
+# =========================
 
-plt.subplots_adjust(top=0.9, bottom=0.08, left=0.18, right=0.98, hspace=0.15)
-plt.savefig('../figures/SFIG4.pdf',format='pdf')
+w1, h1 = float(row1.mediabox.width), float(row1.mediabox.height)
+w2, h2 = float(row2.mediabox.width), float(row2.mediabox.height)
+
+width = max(w1, w2)
+height = h1 + h2
+
+final_page = PageObject.create_blank_page(
+    width=width,
+    height=height
+)
+
+# 第一行放上面
+final_page.merge_translated_page(
+    row1,
+    tx=0,
+    ty=h2
+)
+
+# 第二行放下面
+final_page.merge_translated_page(
+    row2,
+    tx=0,
+    ty=0
+)
+
+
+# =========================
+# 保存
+# =========================
+
+writer = PdfWriter()
+writer.add_page(final_page)
+
+with open('../figures/SFIG4.pdf', 'wb') as f:
+    writer.write(f)

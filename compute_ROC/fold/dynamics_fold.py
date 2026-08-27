@@ -38,7 +38,7 @@ dnonlin = dnonlin_2 + dnonlin_3
 dtot = dlin + dnonlin
 
 # ridge parameter for regression
-ridge_param = 1e-5
+ridge_param = 1e-2
 
 for random_seed in range(200):
 
@@ -52,9 +52,6 @@ for random_seed in range(200):
     b_tseries = np.array(values_tseries[:,2])
 
     dt = values_tseries[1,-1]
-
-    def rrate_update(W_out, partial_t):
-        return W_out @ partial_t
 
     ##
     ## Ridge
@@ -258,7 +255,6 @@ for random_seed in range(200):
 
 ################################################################################################
 
-
 for random_seed in range(200):
 
     df_tseries = pd.read_csv('../../data/fold/ROC/fold_null_{}.csv'.format(random_seed))
@@ -270,9 +266,6 @@ for random_seed in range(200):
     tseries = np.array(values_tseries[:,1])
 
     dt = values_tseries[1,-1]
-
-    def rrate_update(W_out, partial_t):
-        return W_out @ partial_t
 
     ##
     ## Ridge

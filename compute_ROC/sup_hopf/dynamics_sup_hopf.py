@@ -124,7 +124,7 @@ dnonlin = dnonlin_2 + dnonlin_3
 dtot = dlin + dnonlin
 
 # ridge parameter for regression
-ridge_param = 1e-1
+ridge_param = 1e-2
 
 for random_seed in range(200):
 

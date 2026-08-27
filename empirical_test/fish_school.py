@@ -59,7 +59,7 @@ dcop = 3 # x_j, bx_j, x_ix_j
 dtot = dlin + dnonlin + dcop
 
 # ridge parameter for regression
-ridge_param = 1e-3
+ridge_param = 1e-2
 
 N = 25
 col_cos = ['cos_{}'.format(i) for i in range(N)]

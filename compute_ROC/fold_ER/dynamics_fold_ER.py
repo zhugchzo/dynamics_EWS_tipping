@@ -35,7 +35,7 @@ def solve_eval(jac):
     return rrate, imag_dom_eval, real_oth_eval, imag_oth_eval
 
 # ridge parameter for regression
-ridge_param = 1e-3
+ridge_param = 1e-2
 
 length = 1000
 
@@ -362,7 +362,6 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
 
         csv_out = pd.DataFrame(dic_pred)
         csv_out.to_csv('../../results/ROC/fold_ER/ews/{}/dynamics_fold_ER_{}.csv'.format(network_size,random_seed),header = True)
-
 
 
 for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:

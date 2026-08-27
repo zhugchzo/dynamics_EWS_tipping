@@ -39,7 +39,7 @@ dnonlin = dnonlin_2 + dnonlin_3
 dtot = dlin + dnonlin
 
 # ridge parameter for regression
-ridge_param = 1e-3
+ridge_param = 1e-2
 
 df_tseries = pd.read_csv('../data/microcosm/microcosm_train.csv')
 keep_col_tseries = ['Time','light attenuation coefficient']

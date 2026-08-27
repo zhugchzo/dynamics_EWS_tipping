@@ -1,357 +1,76 @@
-import seaborn as sns
+import numpy as np
+import pandas as pd
+from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
-import pandas
 import matplotlib.lines as mlines
 from matplotlib import font_manager
-from sklearn.metrics import r2_score
 
-font_x = {'family':'Arial','weight':'normal','size': 35}
-font_y = {'family':'Arial','weight':'normal','size': 35}
+font_x = {'family':'Arial','weight':'normal','size': 24}
+font_y = {'family':'Arial','weight':'normal','size': 24}
 
 plt.rcParams['font.family'] = 'Arial'
 plt.rcParams['axes.labelweight'] = 'normal'
-plt.rcParams['xtick.labelsize'] = 30
-plt.rcParams['ytick.labelsize'] = 30
+plt.rcParams['xtick.labelsize'] = 24
+plt.rcParams['ytick.labelsize'] = 24
 
-fig, axs = plt.subplots(2, 4, figsize=(30,16))
+################################################################################################
 
-ax1, ax2, ax3, ax7 = axs[0,0], axs[0,1], axs[0,2], axs[0,3]
-ax4, ax5, ax6, ax8 = axs[1,0], axs[1,1], axs[1,2], axs[1,3]
+n = 200
 
-df_fold_results = pandas.read_csv('../results/mean_lambda/fold_mean_lambda.csv')
-df_fold_BA_results = pandas.read_csv('../results/mean_lambda/fold_BA_mean_lambda.csv')
-df_fold_ER_results = pandas.read_csv('../results/mean_lambda/fold_ER_mean_lambda.csv')
-df_sup_hopf_results = pandas.read_csv('../results/mean_lambda/sup_hopf_mean_lambda.csv')
-df_trans_results = pandas.read_csv('../results/mean_lambda/trans_mean_lambda.csv')
-df_sub_hopf_results = pandas.read_csv('../results/mean_lambda/sub_hopf_mean_lambda.csv')
+label = np.concatenate((np.ones(n), np.zeros(n)), axis=0)
 
-fold_esti_re = df_fold_results['esti_mean'].to_numpy()
-fold_ER_esti_re = df_fold_ER_results['esti_re_mean'].to_numpy()
-fold_BA_esti_re = df_fold_BA_results['esti_re_mean'].to_numpy()
-trans_esti_re = df_trans_results['esti_re_mean'].to_numpy()
-sup_hopf_esti_re = df_sup_hopf_results['esti_re1_mean'].to_numpy()
-sub_hopf_esti_re = df_sub_hopf_results['esti_re1_mean'].to_numpy()
-sup_hopf_esti_im = df_sup_hopf_results['esti_im1_mean'].to_numpy()
-sub_hopf_esti_im = df_sub_hopf_results['esti_im1_mean'].to_numpy()
+################################################################################################
 
-df_fold_true = pandas.read_csv('../data/fold/fold_train.csv')
-df_trans_true = pandas.read_csv('../data/trans/trans_train.csv')
-df_sup_hopf_true = pandas.read_csv('../data/sup_hopf/sup_hopf_train.csv')
-df_sub_hopf_true = pandas.read_csv('../data/sub_hopf/sub_hopf_train.csv')
+sup_hopf_sup_rate = pd.read_csv('../results/ROC/sup_hopf/sup_rate.csv')
+sub_hopf_sup_rate = pd.read_csv('../results/ROC/sub_hopf/sup_rate.csv')
 
-fold_true_re = df_fold_true['rrate'].iloc[-500:].to_numpy()
-fold_ER_true_re = df_fold_ER_results['true_re_mean'].to_numpy()
-fold_BA_true_re = df_fold_BA_results['true_re_mean'].to_numpy()
-trans_true_re = df_trans_true['real_eval1'].iloc[-500:].to_numpy()
-sup_hopf_true_re = df_sup_hopf_true['real_eval1'].iloc[-500:].to_numpy()
-sub_hopf_true_re = df_sub_hopf_true['real_eval1'].iloc[-500:].to_numpy()
-sup_hopf_true_im = df_sup_hopf_true['imag_eval1'].iloc[-500:].to_numpy()
-sub_hopf_true_im = df_sub_hopf_true['imag_eval1'].iloc[-500:].to_numpy()
+################################################################################################
 
-# ax1
-ax1.set_aspect('equal')
+fig, axs = plt.subplots(1, 1, figsize=(5,5))
 
-fold_r2 = r2_score(fold_true_re, fold_esti_re)
+ax = axs
+ax.set_aspect('equal', adjustable='box')
 
-sns.scatterplot(
-    x=fold_true_re,
-    y=fold_esti_re,
-    s=50,
-    color='crimson',
-    edgecolor=None,
-    alpha=0.2,
-    zorder=1,
-    ax=ax1
-)
-mn = fold_true_re.min()
-mx = fold_true_re.max()
+################################################################################################
 
-ax1.plot([mn, mx], [mn, mx],color='darkgrey',linestyle='--',lw=2,alpha=0.9,zorder=2)
-ax1.set_xlabel('True',font_x,labelpad=-10)
-ax1.set_ylabel('Estimation',font_y)
-ax1.yaxis.set_label_coords(-0.1, 0.5)
-ax1.tick_params(direction='in',length=10)
-ax1.set_title('Intraspecific competition',fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.05)
-ax1.text(0.1, 0.8, f'$R^2 = {fold_r2:.2f}$', transform=ax1.transAxes, fontsize=36, color='black')
-ax1.spines['right'].set_visible(False)
-ax1.spines['top'].set_visible(False)
+sup_rate_sup_hopf = sup_hopf_sup_rate['sup_rate'].to_numpy()
+sup_rate_sub_hopf = sub_hopf_sup_rate['sup_rate'].to_numpy()
 
-ax1.set_xlim(-0.55,0.05)
-ax1.set_xticks([-0.5,0])
-ax1.set_xticklabels(['-0.5','0'])
-ax1.set_ylim(-0.55,0.05)
-ax1.set_yticks([-0.5,0])
-ax1.set_yticklabels(['-0.5','0'])
+sup_rate = np.concatenate((sup_rate_sup_hopf, sup_rate_sub_hopf), axis=0)
 
-ax1.text(-0.25,1.1,'(a)',ha='left', transform=ax1.transAxes,fontdict={'family':'Arial','size':50,'weight':'normal'})
+fpr_sup_rate, tpr_sup_rate, thresholds_sup_rate = roc_curve(label, sup_rate)
+auc_sup_rate = auc(fpr_sup_rate, tpr_sup_rate)
 
-# ax2
-ax2.set_aspect('equal')
+textstr = '\n'.join([
+    r'$\text{AUC} = %.2f$' % auc_sup_rate
+])
 
-trans_r2 = r2_score(trans_true_re, trans_esti_re)
+ax.plot(fpr_sup_rate, tpr_sup_rate, c='crimson',linewidth=4)
+ax.plot([0, 1], [0, 1], linestyle='--', linewidth=2, color='silver', zorder=0)
 
-sns.scatterplot(
-    x=trans_true_re,
-    y=trans_esti_re,
-    s=50,
-    color='crimson',
-    edgecolor=None,
-    alpha=0.2,
-    zorder=1,
-    ax=ax2
-)
-mn = trans_true_re.min()
-mx = trans_true_re.max()
+ax.text(0.45, 0.35, textstr, transform=ax.transAxes, fontsize=24,
+         verticalalignment='top')
 
-ax2.plot([mn, mx], [mn, mx],color='darkgrey',linestyle='--',lw=2,alpha=0.9,zorder=2)
-ax2.set_xlabel('True',font_x,labelpad=-10)
-ax2.set_ylabel('Estimation',font_y)
-ax2.yaxis.set_label_coords(-0.1, 0.5)
-ax2.tick_params(direction='in',length=10)
-ax2.set_title('Predator-prey (transcritical)',fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.05)
-ax2.text(0.1, 0.8, f'$R^2 = {trans_r2:.2f}$', transform=ax2.transAxes, fontsize=36, color='black')
-ax2.spines['right'].set_visible(False)
-ax2.spines['top'].set_visible(False)
+ax.set_xlabel('False positive rate',font_x)
+ax.set_ylabel('True positive rate',font_x)
 
-ax2.set_xlim(-0.605,0.0605)
-ax2.set_xticks([-0.55,0])
-ax2.set_xticklabels(['-0.55','0'])
-ax2.set_ylim(-0.605,0.0605)
-ax2.set_yticks([-0.55,0])
-ax2.set_yticklabels(['-0.55','0'])
+ax.set_xticks([0,0.5,1])
+ax.set_xticklabels(['0','0.5','1'])
+ax.set_yticks([0,0.5,1])
+ax.set_yticklabels(['0','0.5','1'])
 
-ax2.text(-0.25,1.1,'(b)',ha='left', transform=ax2.transAxes,fontdict={'family':'Arial','size':50,'weight':'normal'})
+# ax.set_title('Classification', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
 
-# ax3
-ax3.set_aspect('equal')
+################################################################################################
 
-sup_hopf_r2 = r2_score(sup_hopf_true_re, sup_hopf_esti_re)
+# legend_dynamics = mlines.Line2D([], [], color='crimson',linestyle='-',linewidth=3)
+# legend_ac = mlines.Line2D([], [], color='darkslateblue',linestyle='-',linewidth=3)
+# legend_dev = mlines.Line2D([], [], color='darkorange',linestyle='-',linewidth=3)
 
-sns.scatterplot(
-    x=sup_hopf_true_re,
-    y=sup_hopf_esti_re,
-    s=50,
-    color='crimson',
-    edgecolor=None,
-    alpha=0.2,
-    zorder=1,
-    ax=ax3
-)
-mn = sup_hopf_true_re.min()
-mx = sup_hopf_true_re.max()
+# fig.legend(handles = [legend_dynamics, legend_ac, legend_dev],
+#             labels = ['Universal EWS','Lag-1 AC','Dynamical eigenvalue'],
+#               loc='upper center', bbox_to_anchor=(0.5,1.01), ncol=3, frameon=False, 
+#               prop=font_manager.FontProperties(family='Arial', size=15))
 
-ax3.plot([mn, mx], [mn, mx],color='darkgrey',linestyle='--',lw=2,alpha=0.9,zorder=2)
-ax3.set_xlabel('True',font_x,labelpad=-10)
-ax3.set_ylabel('Estimation',font_y)
-ax3.yaxis.set_label_coords(-0.1, 0.5)
-ax3.tick_params(direction='in',length=10)
-ax3.set_title('Predator-prey (Hopf)',fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.05)
-ax3.text(0.1, 0.8, f'$R^2 = {sup_hopf_r2:.2f}$', transform=ax3.transAxes, fontsize=36, color='black')
-ax3.spines['right'].set_visible(False)
-ax3.spines['top'].set_visible(False)
-
-ax3.set_xlim(-0.0407,0.00407)
-ax3.set_xticks([-0.037,0])
-ax3.set_xticklabels(['-0.037','0'])
-ax3.set_ylim(-0.0407,0.00407)
-ax3.set_yticks([-0.037,0])
-ax3.set_yticklabels(['-0.037','0'])
-
-ax3.text(-0.25,1.1,'(c)',ha='left', transform=ax3.transAxes,fontdict={'family':'Arial','size':50,'weight':'normal'})
-
-# ax4
-ax4.set_aspect('equal')
-
-sub_hopf_r2 = r2_score(sub_hopf_true_re, sub_hopf_esti_re)
-
-sns.scatterplot(
-    x=sub_hopf_true_re,
-    y=sub_hopf_esti_re,
-    s=50,
-    color='crimson',
-    edgecolor=None,
-    alpha=0.2,
-    zorder=1,
-    ax=ax4
-)
-mn = sub_hopf_true_re.min()
-mx = sub_hopf_true_re.max()
-
-ax4.plot([mn, mx], [mn, mx],color='darkgrey',linestyle='--',lw=2,alpha=0.9,zorder=2)
-ax4.set_xlabel('True',font_x,labelpad=-10)
-ax4.set_ylabel('Estimation',font_y)
-ax4.yaxis.set_label_coords(-0.1, 0.5)
-ax4.tick_params(direction='in',length=10)
-ax4.set_title('Epidemic',fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.05)
-ax4.text(0.1, 0.8, f'$R^2 = {sub_hopf_r2:.2f}$', transform=ax4.transAxes, fontsize=36, color='black')
-ax4.spines['right'].set_visible(False)
-ax4.spines['top'].set_visible(False)
-
-ax4.set_xlim(-0.319,0.0319)
-ax4.set_xticks([-0.29,0])
-ax4.set_xticklabels(['-0.29','0'])
-ax4.set_ylim(-0.319,0.0319)
-ax4.set_yticks([-0.29,0])
-ax4.set_yticklabels(['-0.29','0'])
-
-ax4.text(-0.25,1.1,'(d)',ha='left', transform=ax4.transAxes,fontdict={'family':'Arial','size':50,'weight':'normal'})
-
-# ax5
-ax5.set_aspect('equal')
-
-fold_ER_r2 = r2_score(fold_ER_true_re, fold_ER_esti_re)
-
-sns.scatterplot(
-    x=fold_ER_true_re,
-    y=fold_ER_esti_re,
-    s=50,
-    color='crimson',
-    edgecolor=None,
-    alpha=0.2,
-    zorder=1,
-    ax=ax5
-)
-mn = fold_ER_true_re.min()
-mx = fold_ER_true_re.max()
-
-ax5.plot([mn, mx], [mn, mx],color='darkgrey',linestyle='--',lw=2,alpha=0.9,zorder=2)
-ax5.set_xlabel('True',font_x,labelpad=-10)
-ax5.set_ylabel('Estimation',font_y)
-ax5.yaxis.set_label_coords(-0.1, 0.5)
-ax5.tick_params(direction='in',length=10)
-ax5.set_title('Mutualistic network (ER)',fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.05)
-ax5.text(0.1, 0.8, f'$R^2 = {fold_ER_r2:.2f}$', transform=ax5.transAxes, fontsize=36, color='black')
-ax5.spines['right'].set_visible(False)
-ax5.spines['top'].set_visible(False)
-
-ax5.set_xlim(-0.55,0.055)
-ax5.set_xticks([-0.5,0])
-ax5.set_xticklabels(['-0.5','0'])
-ax5.set_ylim(-0.55,0.055)
-ax5.set_yticks([-0.5,0])
-ax5.set_yticklabels(['-0.5','0'])
-
-ax5.text(-0.25,1.1,'(e)',ha='left', transform=ax5.transAxes,fontdict={'family':'Arial','size':50,'weight':'normal'})
-
-# ax6
-ax6.set_aspect('equal')
-
-fold_BA_r2 = r2_score(fold_BA_true_re, fold_BA_esti_re)
-
-sns.scatterplot(
-    x=fold_BA_true_re,
-    y=fold_BA_esti_re,
-    s=50,
-    color='crimson',
-    edgecolor=None,
-    alpha=0.2,
-    zorder=1,
-    ax=ax6
-)
-mn = fold_BA_true_re.min()
-mx = fold_BA_true_re.max()
-
-ax6.plot([mn, mx], [mn, mx],color='darkgrey',linestyle='--',lw=2,alpha=0.9,zorder=2)
-ax6.set_xlabel('True',font_x,labelpad=-10)
-ax6.set_ylabel('Estimation',font_y)
-ax6.yaxis.set_label_coords(-0.1, 0.5)
-ax6.tick_params(direction='in',length=10)
-ax6.set_title('Mutualistic network (BA)',fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.05)
-ax6.text(0.1, 0.8, f'$R^2 = {fold_BA_r2:.2f}$', transform=ax6.transAxes, fontsize=36, color='black')
-ax6.spines['right'].set_visible(False)
-ax6.spines['top'].set_visible(False)
-
-ax6.set_xlim(-0.77,0.077)
-ax6.set_xticks([-0.7,0])
-ax6.set_xticklabels(['-0.7','0'])
-ax6.set_ylim(-0.77,0.077)
-ax6.set_yticks([-0.7,0])
-ax6.set_yticklabels(['-0.7','0'])
-
-ax6.text(-0.25,1.1,'(f)',ha='left', transform=ax6.transAxes,fontdict={'family':'Arial','size':50,'weight':'normal'})
-
-# ax7
-ax7.set_aspect('equal')
-
-sup_hopf_r2 = r2_score(sup_hopf_true_im, sup_hopf_esti_im)
-
-sns.scatterplot(
-    x=sup_hopf_true_im,
-    y=sup_hopf_esti_im,
-    s=50,
-    color='royalblue',
-    edgecolor=None,
-    alpha=0.2,
-    zorder=1,
-    ax=ax7
-)
-mn = sup_hopf_true_im.min()
-mx = sup_hopf_true_im.max()
-
-ax7.plot([mn, mx], [mn, mx],color='darkgrey',linestyle='--',lw=2,alpha=0.9,zorder=2)
-ax7.set_xlabel('True',font_x,labelpad=-10)
-ax7.set_ylabel('Estimation',font_y)
-ax7.yaxis.set_label_coords(-0.1, 0.5)
-ax7.tick_params(direction='in',length=10)
-ax7.set_title('Predator-prey (Hopf)',fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.05)
-ax7.text(0.1, 0.8, f'$R^2 = {sup_hopf_r2:.2f}$', transform=ax7.transAxes, fontsize=36, color='black')
-ax7.spines['right'].set_visible(False)
-ax7.spines['top'].set_visible(False)
-
-ax7.set_xlim(0.111,0.137)
-ax7.set_xticks([0.113,0.135])
-ax7.set_xticklabels(['0.113','0.135'])
-ax7.set_ylim(0.111,0.137)
-ax7.set_yticks([0.113,0.135])
-ax7.set_yticklabels(['0.113','0.135'])
-
-ax7.text(-0.25,1.1,'(g)',ha='left', transform=ax7.transAxes,fontdict={'family':'Arial','size':50,'weight':'normal'})
-
-# ax8
-ax8.set_aspect('equal')
-
-sub_hopf_r2 = r2_score(sub_hopf_true_im, sub_hopf_esti_im)
-
-sns.scatterplot(
-    x=sub_hopf_true_im,
-    y=sub_hopf_esti_im,
-    s=50,
-    color='royalblue',
-    edgecolor=None,
-    alpha=0.2,
-    zorder=1,
-    ax=ax8
-)
-mn = sub_hopf_true_im.min()
-mx = sub_hopf_true_im.max()
-
-ax8.plot([mn, mx], [mn, mx],color='darkgrey',linestyle='--',lw=2,alpha=0.9,zorder=2)
-ax8.set_xlabel('True',font_x,labelpad=-10)
-ax8.set_ylabel('Estimation',font_y)
-ax8.yaxis.set_label_coords(-0.1, 0.5)
-ax8.tick_params(direction='in',length=10)
-ax8.set_title('Epidemic',fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.05)
-ax8.text(0.1, 0.8, f'$R^2 = {sub_hopf_r2:.2f}$', transform=ax8.transAxes, fontsize=36, color='black')
-ax8.spines['right'].set_visible(False)
-ax8.spines['top'].set_visible(False)
-
-ax8.set_xlim(0.52,0.78)
-ax8.set_xticks([0.55,0.75])
-ax8.set_xticklabels(['0.55','0.75'])
-ax8.set_ylim(0.52,0.78)
-ax8.set_yticks([0.55,0.75])
-ax8.set_yticklabels(['0.55','0.75'])
-
-ax8.text(-0.25,1.1,'(h)',ha='left', transform=ax8.transAxes,fontdict={'family':'Arial','size':50,'weight':'normal'})
-
-legend_esti_re = mlines.Line2D([], [], linestyle='None', markeredgecolor='None', marker='o',markerfacecolor='crimson', markersize=20, alpha=0.9)
-legend_esti_im = mlines.Line2D([], [], linestyle='None', markeredgecolor='None', marker='o',markerfacecolor='royalblue', markersize=20, alpha=0.9)
-legend_true = mlines.Line2D([], [], color='darkgrey', linestyle='--', linewidth=5, alpha=0.9)
-
-fig.legend(handles = [legend_esti_re, legend_esti_im, legend_true],
-            labels = ['Estimated Re', 'Estimated Im', 'True'],
-              loc='upper center', bbox_to_anchor=(0.5,1.01), ncol=3, frameon=False, 
-              prop=font_manager.FontProperties(family='Arial', size=30, weight='bold'),handletextpad=0.4)
-
-plt.subplots_adjust(top=0.85, bottom=0.05, left=0.03, right=1, hspace=0.4, wspace=0.15)
-plt.savefig('../figures/SFIG5.pdf',format='pdf')
+plt.subplots_adjust(top=0.96, bottom=0.16, left=0.2, right=0.99)
+plt.savefig('../figures/SFIG7.pdf',format='pdf')

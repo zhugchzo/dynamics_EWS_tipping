@@ -31,29 +31,50 @@ def robust_count_iqr(row):
 df_esti_re_sum = pd.DataFrame()
 df_esti_im_sum = pd.DataFrame()
 
+df_esti_re_v1_sum = pd.DataFrame()
+df_esti_re_v2_sum = pd.DataFrame()
+
 for random_seed in range(200):
 
     df_esti_re = pd.read_csv('../results/ROC/trans/ews/dynamics_trans_{}.csv'.format(random_seed))[['esti_rrate']]
     df_esti_im = pd.read_csv('../results/ROC/trans/ews/dynamics_trans_{}.csv'.format(random_seed))[['esti_imag_eval1']]
 
+    df_esti_re_v1 = pd.read_csv('../results/ROC/trans/ews_singlev/dynamics_trans_{}.csv'.format(random_seed))[['esti_rrate1']]
+    df_esti_re_v2 = pd.read_csv('../results/ROC/trans/ews_singlev/dynamics_trans_{}.csv'.format(random_seed))[['esti_rrate2']]
+
     df_esti_re_sum = pd.concat([df_esti_re_sum.reset_index(drop=True),df_esti_re.reset_index(drop=True)], axis=1)
     df_esti_im_sum = pd.concat([df_esti_im_sum.reset_index(drop=True),df_esti_im.reset_index(drop=True)], axis=1)
+
+    df_esti_re_v1_sum = pd.concat([df_esti_re_v1_sum.reset_index(drop=True),df_esti_re_v1.reset_index(drop=True)], axis=1)
+    df_esti_re_v2_sum = pd.concat([df_esti_re_v2_sum.reset_index(drop=True),df_esti_re_v2.reset_index(drop=True)], axis=1)
 
 # 按行均值
 esti_re_mean = df_esti_re_sum.apply(robust_mean_iqr, axis=1)
 esti_im_mean = df_esti_im_sum.apply(robust_mean_iqr, axis=1)
 
+esti_re_v1_mean = df_esti_re_v1_sum.mean(axis=1)
+esti_re_v2_mean = df_esti_re_v2_sum.mean(axis=1)
+
 # 按行标准差
 esti_re_std = df_esti_re_sum.apply(robust_std_iqr, axis=1)
 esti_im_std = df_esti_im_sum.apply(robust_std_iqr, axis=1)
+
+esti_re_v1_std = df_esti_re_v1_sum.std(axis=1, ddof=1)
+esti_re_v2_std = df_esti_re_v2_sum.std(axis=1, ddof=1)
 
 # 每行有效样本数
 n_re = df_esti_re_sum.apply(robust_count_iqr, axis=1)
 n_im = df_esti_im_sum.apply(robust_count_iqr, axis=1)
 
+n_re_v1 = df_esti_re_v1_sum.count(axis=1)
+n_re_v2 = df_esti_re_v2_sum.count(axis=1)
+
 # 95% 置信区间半宽
 esti_re_ci = 1.96 * esti_re_std / np.sqrt(n_re)
 esti_im_ci = 1.96 * esti_im_std / np.sqrt(n_im)
+
+esti_re_v1_ci = 1.96 * esti_re_v1_std / np.sqrt(n_re_v1)
+esti_re_v2_ci = 1.96 * esti_re_v2_std / np.sqrt(n_re_v2)
 
 # 整理成一个 DataFrame
 df_esti_stats = pd.DataFrame({
@@ -68,6 +89,19 @@ df_esti_stats = pd.DataFrame({
 df_esti_stats.insert(0, 'Time', range(len(df_esti_stats)))
 
 df_esti_stats.to_csv('../results/mean_lambda/trans_mean_lambda.csv', index=False)
+
+df_esti_sv_stats = pd.DataFrame({
+    'esti_re_v1_mean': esti_re_v1_mean,
+    'esti_re_v1_ci_lower': esti_re_v1_mean - esti_re_v1_ci,
+    'esti_re_v1_ci_upper': esti_re_v1_mean + esti_re_v1_ci,
+    'esti_re_v2_mean': esti_re_v2_mean,
+    'esti_re_v2_ci_lower': esti_re_v2_mean - esti_re_v2_ci,
+    'esti_re_v2_ci_upper': esti_re_v2_mean + esti_re_v2_ci
+})
+
+df_esti_sv_stats.insert(0, 'Time', range(len(df_esti_sv_stats)))
+
+df_esti_sv_stats.to_csv('../results/mean_lambda/singlev/trans_mean_lambda.csv', index=False)
 
 ###########################################################################################
 

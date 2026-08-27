@@ -35,7 +35,7 @@ def solve_eval(jac):
     return rrate, imag_dom_eval, real_oth_eval, imag_oth_eval
 
 # ridge parameter for regression
-ridge_param = 1e-1
+ridge_param = 1e-2
 
 length = 1000
 
@@ -354,8 +354,6 @@ for network_size in [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
                     'esti_rrate':estimate_rrate, 'esti_real_oth_eval':estimate_real_oth_eval, 
                     'esti_imag_dom_eval':estimate_imag_dom_eval, 'esti_imag_oth_eval':estimate_imag_oth_eval,
                     'initial_theta':best_initial_theta_list, 'delta_theta':best_delta_theta_list}
-        
-        dic_pred = {'esti_rrate':estimate_rrate,'esti_imag_dom_eval':estimate_imag_dom_eval}
         
         polynomial = ['cte', 'x', 'b', 'x^2', 'bx', 'x^3', 'bx^2', 'x_j', 'bx_j', 'x_ix_j']
         for j in range(dtot + cte):

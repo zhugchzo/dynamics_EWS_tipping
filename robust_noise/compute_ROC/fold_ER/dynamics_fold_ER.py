@@ -35,7 +35,7 @@ def solve_eval(jac):
     return rrate, imag_dom_eval, real_oth_eval, imag_oth_eval
 
 # ridge parameter for regression
-ridge_param = 1e-3
+ridge_param = 1e-2
 
 length = 1000
 
@@ -94,179 +94,14 @@ for sigma in [0.0025, 0.01, 0.02, 0.03, 0.04, 0.05]:
         estimate_real_oth_eval = list()
         estimate_imag_oth_eval = list()
 
-        best_initial_theta_list = list()
-        best_delta_theta_list = list()
-
         W_out_matrix = np.zeros((test_length,dtot + cte))
 
-        grid_initial_theta = [-1, 0, 1]
-        grid_delta_theta = [5e-4, 1e-3, 5e-3]
+        initial_theta = 0
+        delta_theta = 1e-3
 
         i = 0
 
         for winstart in range(test_length):
-
-            dic_AIC = {}
-
-            for initial_theta in grid_initial_theta:
-
-                for delta_theta in grid_delta_theta:
-
-                    # create an array to hold the linear part of the feature vector
-                    x = np.zeros((dlin,length*N))
-                    y = np.zeros((d*N,length))
-                    
-                    fx_t = np.array([])
-                    out_train_t = np.zeros((dtot + cte,N))
-                    jacobian = np.zeros((N,N))
-
-                    # create an array to hold the full feature vector for training time
-                    # (use ones so the constant term is already 1)
-                    out_train = np.zeros((dtot + cte,train_length*N))
-                    out_train[0, :] = 1
-
-                    for j in range(length):
-                        y[:,j] = x_tseries[j]
-
-                    for node in range(N):
-                        # fill in the linear part of the feature vector for all times
-                        for j in range(length):
-                            x[0:d,j+node*length] = x_tseries[j,node]
-                        x[-1,node*length + winstart : node*length + winstart + train_length] = np.linspace(initial_theta, initial_theta + (train_length - 1) * delta_theta, train_length)
-
-                        # copy over the linear part (shift over by one to account for constant if needed)
-                        out_train[cte:dlin + cte, node*train_length:(node+1)*train_length] = x[:,node*length + winstart : node*length + winstart + train_length]
-
-                        # fill in the non-linear part, order = 2
-                        cnt = 0
-                        for row1 in range(dlin):
-                            if row1 < dlin-1:
-                                for row2 in range(row1,dlin):
-                                    # shift by one for constant if needed
-                                    out_train[dlin + cnt + cte, node*train_length:(node+1)*train_length] = x[row1,node*length + winstart : node*length + winstart + train_length] * x[row2,node*length + winstart : node*length + winstart + train_length]
-                                    cnt += 1
-
-                        # fill in the non-linear part, order = 3
-                        for row1 in range(dlin):
-                            if row1 < dlin-1:
-                                for row2 in range(row1,dlin):
-                                    if row2 < dlin-1:
-                                        for row3 in range(row2,dlin):
-                                            out_train[dlin + cnt + cte, node*train_length:(node+1)*train_length] = x[row1,node*length + winstart : node*length + winstart + train_length] * x[row2,node*length + winstart : node*length + winstart + train_length] * x[row3,node*length + winstart : node*length + winstart + train_length]
-                                            cnt += 1
-
-                        sum_y = A[node,:] @ y[:, winstart:winstart+train_length]
-
-                        out_train[dlin + cnt + cte: dlin + cnt + cte + 1, node*train_length:(node+1)*train_length] = sum_y
-                        out_train[dlin + cnt + cte + 1: dlin + cnt + cte + 2, node*train_length:(node+1)*train_length] = sum_y * np.linspace(initial_theta, initial_theta + (train_length - 1) * delta_theta, train_length)
-                        out_train[dlin + cnt + cte + 2: dlin + cnt + cte + 3, node*train_length:(node+1)*train_length] = sum_y * x[:d,node*length + winstart : node*length + winstart + train_length]
-
-                        fx_t = np.concatenate([fx_t, (x[0:d,node*length + winstart + 1:node*length + winstart + train_length + 1] - x[0:d,node*length + winstart:node*length + winstart + train_length])[0]/dt])       
-
-                        # the colunm of out_train_t is (cte, x, b, x^2, bx, x^3, bx^2, x_j, bx_j, x_ix_j).T
-                        out_train_t[:,node] = out_train[:,(node+1)*train_length-1]
-
-                    # compute the pseudo-inverse matrix error
-
-                    pinv_error_matrix = np.linalg.pinv(out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte)) @ (out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte)) - np.identity(out_train.shape[0])
-                    pinv_error = np.sum(pinv_error_matrix**2) / out_train.shape[0]**2
-
-                    # ridge regression: train W_out to map out_train to x[t+1] - x[t]
-                    W_out = fx_t @ out_train[:,:].T @ np.linalg.pinv(out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte))
-
-    #####################################################################################
-
-                    # generation, compute MSE
-
-                    # create a place to store feature vectors for prediction
-                    out_gen = np.ones((dtot + cte,N))        # full feature vector
-                    x_gen = np.zeros((dlin + dcop,train_length*N))      # linear part
-
-                    x_gen[d:d+1,:] = np.tile(np.linspace(initial_theta, initial_theta + (train_length - 1) * delta_theta, train_length), N)
-
-                    gen_traj = np.zeros((N,train_length))
-
-                    for node in range(N):
-
-                        x_gen[0,train_length*node] = x_tseries[winstart,node]
-
-                        sum_y0 = A[node,:] @ x_tseries[winstart]
-                    
-                        out_gen[dlin + cnt + cte: dlin + cnt + cte + 1, node] = sum_y0
-                        out_gen[dlin + cnt + cte + 1: dlin + cnt + cte + 2, node] = sum_y0 * x_gen[d:d+1,train_length*node]
-                        out_gen[dlin + cnt + cte + 2: dlin + cnt + cte + 3, node] = sum_y0 * x_gen[0,train_length*node]
-
-                        gen_traj[node,0] = x_gen[0,train_length*node]
-
-                    for j in range(train_length-1):
-
-                        for node in range(N):
-
-                            # copy linear part into whole feature vector
-                            out_gen[cte:dlin + cte,node] = x_gen[:dlin,train_length*node+j] # shift by one for constant
-
-                            # fill in the non-linear part, order = 2
-                            cnt = 0
-                            for row1 in range(dlin):
-                                if row1 < dlin-1:
-                                    for row2 in range(row1,dlin):
-                                        # shift by one for constant if needed
-                                        out_gen[dlin + cnt + cte, node] = x_gen[row1, train_length*node+j] * x[row2, train_length*node+j]
-                                        cnt += 1
-
-                            # fill in the non-linear part, order = 3
-                            for row1 in range(dlin):
-                                if row1 < dlin-1:
-                                    for row2 in range(row1,dlin):
-                                        if row2 < dlin-1:
-                                            for row3 in range(row2,dlin):
-                                                out_gen[dlin + cnt + cte, node] = x[row1, train_length*node+j] * x[row2, train_length*node+j] * x[row3, train_length*node+j]
-                                                cnt += 1
-
-                            # do a prediction
-                            x_gen[0,train_length*node+j+1] = x_gen[0,train_length*node+j] + (W_out @ out_gen[:,node])*dt
-
-                            gen_traj[node,j+1] = x_gen[0,train_length*node+j+1]
-
-                        for node in range(N):
-
-                            sum_y = A[node,:] @ gen_traj[:,j+1]
-                        
-                            out_gen[dlin + cnt + cte: dlin + cnt + cte + 1, node] = sum_y
-                            out_gen[dlin + cnt + cte + 1: dlin + cnt + cte + 2, node] = sum_y * x_gen[d:d+1,train_length*node+j+1]
-                            out_gen[dlin + cnt + cte + 2: dlin + cnt + cte + 3, node] = sum_y * x_gen[0,train_length*node+j+1]
-
-                    sums = np.sum((x_tseries[winstart : winstart+train_length].T - gen_traj)**2)
-                    mse = sums / train_length
-
-                    # compute AIC
-                    if np.log(mse) >= 0:
-                        AIC = pinv_error*train_length*np.log(mse) + 2*np.count_nonzero(W_out)
-                    else:
-                        AIC = train_length*np.log(mse)/pinv_error + 2*np.count_nonzero(W_out)
-
-                    if np.isnan(AIC):
-                        AIC = 1e5
-
-                    dic_AIC['({},{})'.format(initial_theta,delta_theta)] = AIC
-
-            # find the best theta
-
-            formatted = {}
-
-            for key, value in dic_AIC.items():
-                row, col = key.strip('()').split(',')
-                formatted[(row, col)] = value
-
-            min_key = min(dic_AIC, key=dic_AIC.get)
-
-            best_initial_theta, best_delta_theta = min_key.strip('()').split(',')
-
-            best_initial_theta = float(best_initial_theta)
-            best_delta_theta = float(best_delta_theta)
-
-            best_initial_theta_list.append(best_initial_theta)
-            best_delta_theta_list.append(best_delta_theta)
 
             # create an array to hold the linear part of the feature vector
             x = np.zeros((dlin,length*N))
@@ -288,7 +123,7 @@ for sigma in [0.0025, 0.01, 0.02, 0.03, 0.04, 0.05]:
                 # fill in the linear part of the feature vector for all times
                 for j in range(length):
                     x[0:d,j+node*length] = x_tseries[j,node]
-                x[-1,node*length + winstart : node*length + winstart + train_length] = np.linspace(best_initial_theta, best_initial_theta + (train_length - 1) * best_delta_theta, train_length)
+                x[-1,node*length + winstart : node*length + winstart + train_length] = np.linspace(initial_theta, initial_theta + (train_length - 1) * delta_theta, train_length)
 
                 # copy over the linear part (shift over by one to account for constant if needed)
                 out_train[cte:dlin + cte, node*train_length:(node+1)*train_length] = x[:,node*length + winstart : node*length + winstart + train_length]
@@ -326,7 +161,7 @@ for sigma in [0.0025, 0.01, 0.02, 0.03, 0.04, 0.05]:
             W_out = fx_t @ out_train[:,:].T @ np.linalg.pinv(out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte))
 
             W_out_matrix[i,:] = W_out
-
+            
             for node in range(N):
 
                 # estimating recovery rate
@@ -352,8 +187,7 @@ for sigma in [0.0025, 0.01, 0.02, 0.03, 0.04, 0.05]:
 
         dic_pred = {'Time':tseries[train_length - 1 : -1], 'b_param':b_tseries[train_length - 1 : -1],'traj_x':x_mean[train_length - 1 : -1],
                      'esti_rrate':estimate_rrate, 'esti_real_oth_eval':estimate_real_oth_eval,
-                    'esti_imag_dom_eval':estimate_imag_dom_eval, 'esti_imag_oth_eval':estimate_imag_oth_eval,
-                    'initial_theta':best_initial_theta_list, 'delta_theta':best_delta_theta_list}
+                    'esti_imag_dom_eval':estimate_imag_dom_eval, 'esti_imag_oth_eval':estimate_imag_oth_eval}
 
         polynomial = ['cte', 'x', 'b', 'x^2', 'bx', 'x^3', 'bx^2', 'x_j', 'bx_j', 'x_ix_j']
         for j in range(dtot + cte):
@@ -406,171 +240,9 @@ for sigma in [0.0025, 0.01, 0.02, 0.03, 0.04, 0.05]:
 
         estimate_rrate = list()
 
-        grid_initial_theta = [-1, 0, 1]
-        grid_delta_theta = [5e-4, 1e-3, 5e-3]
-
         i = 0
 
         for winstart in range(test_length):
-
-            dic_AIC = {}
-
-            for initial_theta in grid_initial_theta:
-
-                for delta_theta in grid_delta_theta:
-
-                    # create an array to hold the linear part of the feature vector
-                    x = np.zeros((dlin,length*N))
-                    y = np.zeros((d*N,length))
-                    
-                    fx_t = np.array([])
-                    out_train_t = np.zeros((dtot + cte,N))
-                    jacobian = np.zeros((N,N))
-
-                    # create an array to hold the full feature vector for training time
-                    # (use ones so the constant term is already 1)
-                    out_train = np.zeros((dtot + cte,train_length*N))
-                    out_train[0, :] = 1
-
-                    for j in range(length):
-                        y[:,j] = x_tseries[j]
-
-                    for node in range(N):
-                        # fill in the linear part of the feature vector for all times
-                        for j in range(length):
-                            x[0:d,j+node*length] = x_tseries[j,node]
-                        x[-1,node*length + winstart : node*length + winstart + train_length] = np.linspace(initial_theta, initial_theta + (train_length - 1) * delta_theta, train_length)
-
-                        # copy over the linear part (shift over by one to account for constant if needed)
-                        out_train[cte:dlin + cte, node*train_length:(node+1)*train_length] = x[:,node*length + winstart : node*length + winstart + train_length]
-
-                        # fill in the non-linear part, order = 2
-                        cnt = 0
-                        for row1 in range(dlin):
-                            if row1 < dlin-1:
-                                for row2 in range(row1,dlin):
-                                    # shift by one for constant if needed
-                                    out_train[dlin + cnt + cte, node*train_length:(node+1)*train_length] = x[row1,node*length + winstart : node*length + winstart + train_length] * x[row2,node*length + winstart : node*length + winstart + train_length]
-                                    cnt += 1
-
-                        # fill in the non-linear part, order = 3
-                        for row1 in range(dlin):
-                            if row1 < dlin-1:
-                                for row2 in range(row1,dlin):
-                                    if row2 < dlin-1:
-                                        for row3 in range(row2,dlin):
-                                            out_train[dlin + cnt + cte, node*train_length:(node+1)*train_length] = x[row1,node*length + winstart : node*length + winstart + train_length] * x[row2,node*length + winstart : node*length + winstart + train_length] * x[row3,node*length + winstart : node*length + winstart + train_length]
-                                            cnt += 1
-
-                        sum_y = A[node,:] @ y[:, winstart:winstart+train_length]
-
-                        out_train[dlin + cnt + cte: dlin + cnt + cte + 1, node*train_length:(node+1)*train_length] = sum_y
-                        out_train[dlin + cnt + cte + 1: dlin + cnt + cte + 2, node*train_length:(node+1)*train_length] = sum_y * np.linspace(initial_theta, initial_theta + (train_length - 1) * delta_theta, train_length)
-                        out_train[dlin + cnt + cte + 2: dlin + cnt + cte + 3, node*train_length:(node+1)*train_length] = sum_y * x[:d,node*length + winstart : node*length + winstart + train_length]
-
-                        fx_t = np.concatenate([fx_t, (x[0:d,node*length + winstart + 1:node*length + winstart + train_length + 1] - x[0:d,node*length + winstart:node*length + winstart + train_length])[0]/dt])       
-
-                        # the colunm of out_train_t is (cte, x, b, x^2, bx, x^3, bx^2, x_j, bx_j, x_ix_j).T
-                        out_train_t[:,node] = out_train[:,(node+1)*train_length-1]
-
-                    # compute the pseudo-inverse matrix error
-
-                    pinv_error_matrix = np.linalg.pinv(out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte)) @ (out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte)) - np.identity(out_train.shape[0])
-                    pinv_error = np.sum(pinv_error_matrix**2) / out_train.shape[0]**2
-
-                    # ridge regression: train W_out to map out_train to x[t+1] - x[t]
-                    W_out = fx_t @ out_train[:,:].T @ np.linalg.pinv(out_train[:,:] @ out_train[:,:].T + ridge_param*np.identity(dtot + cte))
-
-    #####################################################################################
-
-                    # generation, compute MSE
-
-                    # create a place to store feature vectors for prediction
-                    out_gen = np.ones((dtot + cte,N))        # full feature vector
-                    x_gen = np.zeros((dlin + dcop,train_length*N))      # linear part
-
-                    x_gen[d:d+1,:] = np.tile(np.linspace(initial_theta, initial_theta + (train_length - 1) * delta_theta, train_length), N)
-
-                    gen_traj = np.zeros((N,train_length))
-
-                    for node in range(N):
-
-                        x_gen[0,train_length*node] = x_tseries[winstart,node]
-
-                        sum_y0 = A[node,:] @ x_tseries[winstart]
-                    
-                        out_gen[dlin + cnt + cte: dlin + cnt + cte + 1, node] = sum_y0
-                        out_gen[dlin + cnt + cte + 1: dlin + cnt + cte + 2, node] = sum_y0 * x_gen[d:d+1,train_length*node]
-                        out_gen[dlin + cnt + cte + 2: dlin + cnt + cte + 3, node] = sum_y0 * x_gen[0,train_length*node]
-
-                        gen_traj[node,0] = x_gen[0,train_length*node]
-
-                    for j in range(train_length-1):
-
-                        for node in range(N):
-
-                            # copy linear part into whole feature vector
-                            out_gen[cte:dlin + cte,node] = x_gen[:dlin,train_length*node+j] # shift by one for constant
-
-                            # fill in the non-linear part, order = 2
-                            cnt = 0
-                            for row1 in range(dlin):
-                                if row1 < dlin-1:
-                                    for row2 in range(row1,dlin):
-                                        # shift by one for constant if needed
-                                        out_gen[dlin + cnt + cte, node] = x_gen[row1, train_length*node+j] * x[row2, train_length*node+j]
-                                        cnt += 1
-
-                            # fill in the non-linear part, order = 3
-                            for row1 in range(dlin):
-                                if row1 < dlin-1:
-                                    for row2 in range(row1,dlin):
-                                        if row2 < dlin-1:
-                                            for row3 in range(row2,dlin):
-                                                out_gen[dlin + cnt + cte, node] = x[row1, train_length*node+j] * x[row2, train_length*node+j] * x[row3, train_length*node+j]
-                                                cnt += 1
-
-                            # do a prediction
-                            x_gen[0,train_length*node+j+1] = x_gen[0,train_length*node+j] + (W_out @ out_gen[:,node])*dt
-
-                            gen_traj[node,j+1] = x_gen[0,train_length*node+j+1]
-
-                        for node in range(N):
-
-                            sum_y = A[node,:] @ gen_traj[:,j+1]
-                        
-                            out_gen[dlin + cnt + cte: dlin + cnt + cte + 1, node] = sum_y
-                            out_gen[dlin + cnt + cte + 1: dlin + cnt + cte + 2, node] = sum_y * x_gen[d:d+1,train_length*node+j+1]
-                            out_gen[dlin + cnt + cte + 2: dlin + cnt + cte + 3, node] = sum_y * x_gen[0,train_length*node+j+1]
-
-                    sums = np.sum((x_tseries[winstart : winstart+train_length].T - gen_traj)**2)
-                    mse = sums / train_length
-
-                    # compute AIC
-                    if np.log(mse) >= 0:
-                        AIC = pinv_error*train_length*np.log(mse) + 2*np.count_nonzero(W_out)
-                    else:
-                        AIC = train_length*np.log(mse)/pinv_error + 2*np.count_nonzero(W_out)
-
-                    if np.isnan(AIC):
-                        AIC = 1e5
-
-                    dic_AIC['({},{})'.format(initial_theta,delta_theta)] = AIC
-
-            # find the best theta
-
-            formatted = {}
-
-            for key, value in dic_AIC.items():
-                row, col = key.strip('()').split(',')
-                formatted[(row, col)] = value
-
-            min_key = min(dic_AIC, key=dic_AIC.get)
-
-            best_initial_theta, best_delta_theta = min_key.strip('()').split(',')
-
-            best_initial_theta = float(best_initial_theta)
-            best_delta_theta = float(best_delta_theta)
 
             # create an array to hold the linear part of the feature vector
             x = np.zeros((dlin,length*N))
@@ -592,7 +264,7 @@ for sigma in [0.0025, 0.01, 0.02, 0.03, 0.04, 0.05]:
                 # fill in the linear part of the feature vector for all times
                 for j in range(length):
                     x[0:d,j+node*length] = x_tseries[j,node]
-                x[-1,node*length + winstart : node*length + winstart + train_length] = np.linspace(best_initial_theta, best_initial_theta + (train_length - 1) * best_delta_theta, train_length)
+                x[-1,node*length + winstart : node*length + winstart + train_length] = np.linspace(initial_theta, initial_theta + (train_length - 1) * delta_theta, train_length)
 
                 # copy over the linear part (shift over by one to account for constant if needed)
                 out_train[cte:dlin + cte, node*train_length:(node+1)*train_length] = x[:,node*length + winstart : node*length + winstart + train_length]
