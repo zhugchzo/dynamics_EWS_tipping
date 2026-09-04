@@ -12,10 +12,10 @@ plt.rcParams['axes.labelweight'] = 'normal'
 plt.rcParams['xtick.labelsize'] = 30
 plt.rcParams['ytick.labelsize'] = 30
 
-fig, axs = plt.subplots(2, 3, figsize=(22,15))
+fig, axs = plt.subplots(2, 4, figsize=(28,15))
 
-ax1, ax2, ax3 = axs[0,0], axs[0,1], axs[0,2]
-ax4, ax5, ax6 = axs[1,0], axs[1,1], axs[1,2]
+ax1, ax2, ax3, ax4 = axs[0,0], axs[0,1], axs[0,2], axs[0,3]
+ax5, ax6, ax7, ax8 = axs[1,0], axs[1,1], axs[1,2], axs[1,3]
 
 df_fold = pandas.read_csv('../results/noise/fold/auc.csv')
 df_trans = pandas.read_csv('../results/noise/trans/auc.csv')
@@ -23,6 +23,8 @@ df_sup_hopf = pandas.read_csv('../results/noise/sup_hopf/auc.csv')
 df_sub_hopf = pandas.read_csv('../results/noise/sub_hopf/auc.csv')
 df_fold_ER = pandas.read_csv('../results/noise/fold_ER/auc.csv')
 df_fold_BA = pandas.read_csv('../results/noise/fold_BA/auc.csv')
+
+df_steady_rate = pandas.read_csv('../results/noise/auc_steady.csv')
 
 ###################################################
 
@@ -37,6 +39,8 @@ dynamics_sub_hopf = df_sub_hopf['dynamics_auc'].to_numpy()
 dynamics_fold_ER = df_fold_ER['dynamics_auc'].to_numpy()
 dynamics_fold_BA = df_fold_BA['dynamics_auc'].to_numpy()
 
+dynamics_rate = df_steady_rate['dynamics_auc'].to_numpy()
+
 ac_fold = df_fold['ac_auc'].to_numpy()
 ac_trans = df_trans['ac_auc'].to_numpy()
 ac_sup_hopf = df_sup_hopf['ac_auc'].to_numpy()
@@ -50,6 +54,8 @@ dev_sup_hopf = df_sup_hopf['dev_auc'].to_numpy()
 dev_sub_hopf = df_sub_hopf['dev_auc'].to_numpy()
 dev_fold_ER = df_fold_ER['dev_auc'].to_numpy()
 dev_fold_BA = df_fold_BA['dev_auc'].to_numpy()
+
+dev_rate = df_steady_rate['dev_auc'].to_numpy()
 
 ###################################################
 
@@ -155,51 +161,18 @@ ax3.set_title('Predator-prey (Hopf)', fontsize=30, fontweight='normal', fontfami
 
 ###################################################
 
-ax4.plot(sigma,dynamics_sub_hopf,c='crimson',linewidth=5,zorder=3)
-ax4.scatter(sigma,dynamics_sub_hopf,c='crimson',marker='o',s=150,zorder=3)
-
-ax4.plot(sigma,ac_sub_hopf,c='darkslateblue',linewidth=5,zorder=2)
-ax4.scatter(sigma,ac_sub_hopf,c='darkslateblue',marker='o',s=150,zorder=2)
-
-ax4.plot(sigma,dev_sub_hopf,c='darkorange',linewidth=5,zorder=1)
-ax4.scatter(sigma,dev_sub_hopf,c='darkorange',marker='o',s=150,zorder=1)
-
-ax4.set_xlim(-0.0025,0.055)
-ax4.set_xticks([0.0025, 0.01, 0.02, 0.03, 0.04, 0.05])
-ax4.set_xticklabels(['0.25', '1', '2', '3', '4', '5'])
-ax4.annotate(
-    r'$\times 10^{-2}$',
-    xy=(1, 0), xycoords='axes fraction',
-    xytext=(8, -2), textcoords='offset points',
-    ha='left', va='top',fontsize=18
-)
-
-ax4.set_ylim(0.15,1.05)
-ax4.set_yticks([0.2,0.6,1])
-ax4.set_yticklabels(['0.2','0.6','1'])
-
-ax4.tick_params(direction='in', length=10)
-ax4.minorticks_on()
-ax4.tick_params(axis='x', which='minor', bottom=False)
-ax4.tick_params(axis='y', which='minor', direction='in', length=5)
-
-ax4.set_xlabel('Noise amplitude',font_x,labelpad=20)
-ax4.set_ylabel('AUC', font_y)
-ax4.yaxis.set_label_coords(-0.15, 0.5)
-
-ax4.text(-0.2,1.05,'(d)',ha='left', transform=ax4.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
-ax4.set_title('Epidemic', fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax4.axis('off')
 
 ###################################################
 
-ax5.plot(sigma,dynamics_fold_ER,c='crimson',linewidth=5,zorder=3)
-ax5.scatter(sigma,dynamics_fold_ER,c='crimson',marker='o',s=150,zorder=3)
+ax5.plot(sigma,dynamics_sub_hopf,c='crimson',linewidth=5,zorder=3)
+ax5.scatter(sigma,dynamics_sub_hopf,c='crimson',marker='o',s=150,zorder=3)
 
-ax5.plot(sigma,ac_fold_ER,c='darkslateblue',linewidth=5,zorder=2)
-ax5.scatter(sigma,ac_fold_ER,c='darkslateblue',marker='o',s=150,zorder=2)
+ax5.plot(sigma,ac_sub_hopf,c='darkslateblue',linewidth=5,zorder=2)
+ax5.scatter(sigma,ac_sub_hopf,c='darkslateblue',marker='o',s=150,zorder=2)
 
-ax5.plot(sigma,dev_fold_ER,c='darkorange',linewidth=5,zorder=1)
-ax5.scatter(sigma,dev_fold_ER,c='darkorange',marker='o',s=150,zorder=1)
+ax5.plot(sigma,dev_sub_hopf,c='darkorange',linewidth=5,zorder=1)
+ax5.scatter(sigma,dev_sub_hopf,c='darkorange',marker='o',s=150,zorder=1)
 
 ax5.set_xlim(-0.0025,0.055)
 ax5.set_xticks([0.0025, 0.01, 0.02, 0.03, 0.04, 0.05])
@@ -221,20 +194,22 @@ ax5.tick_params(axis='x', which='minor', bottom=False)
 ax5.tick_params(axis='y', which='minor', direction='in', length=5)
 
 ax5.set_xlabel('Noise amplitude',font_x,labelpad=20)
+ax5.set_ylabel('AUC', font_y)
+ax5.yaxis.set_label_coords(-0.15, 0.5)
 
-ax5.text(-0.2,1.05,'(e)',ha='left', transform=ax5.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
-ax5.set_title('Mutualistic network (ER)', fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax5.text(-0.2,1.05,'(d)',ha='left', transform=ax5.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax5.set_title('Epidemic', fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
 
 ###################################################
 
-ax6.plot(sigma,dynamics_fold_BA,c='crimson',linewidth=5,zorder=3)
-ax6.scatter(sigma,dynamics_fold_BA,c='crimson',marker='o',s=150,zorder=3)
+ax6.plot(sigma,dynamics_fold_ER,c='crimson',linewidth=5,zorder=3)
+ax6.scatter(sigma,dynamics_fold_ER,c='crimson',marker='o',s=150,zorder=3)
 
-ax6.plot(sigma,ac_fold_BA,c='darkslateblue',linewidth=5,zorder=2)
-ax6.scatter(sigma,ac_fold_BA,c='darkslateblue',marker='o',s=150,zorder=2)
+ax6.plot(sigma,ac_fold_ER,c='darkslateblue',linewidth=5,zorder=2)
+ax6.scatter(sigma,ac_fold_ER,c='darkslateblue',marker='o',s=150,zorder=2)
 
-ax6.plot(sigma,dev_fold_BA,c='darkorange',linewidth=5,zorder=1)
-ax6.scatter(sigma,dev_fold_BA,c='darkorange',marker='o',s=150,zorder=1)
+ax6.plot(sigma,dev_fold_ER,c='darkorange',linewidth=5,zorder=1)
+ax6.scatter(sigma,dev_fold_ER,c='darkorange',marker='o',s=150,zorder=1)
 
 ax6.set_xlim(-0.0025,0.055)
 ax6.set_xticks([0.0025, 0.01, 0.02, 0.03, 0.04, 0.05])
@@ -257,8 +232,75 @@ ax6.tick_params(axis='y', which='minor', direction='in', length=5)
 
 ax6.set_xlabel('Noise amplitude',font_x,labelpad=20)
 
-ax6.text(-0.2,1.05,'(f)',ha='left', transform=ax6.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
-ax6.set_title('Mutualistic network (BA)', fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax6.text(-0.2,1.05,'(e)',ha='left', transform=ax6.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax6.set_title('Mutualistic network (ER)', fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+
+###################################################
+
+ax7.plot(sigma,dynamics_fold_BA,c='crimson',linewidth=5,zorder=3)
+ax7.scatter(sigma,dynamics_fold_BA,c='crimson',marker='o',s=150,zorder=3)
+
+ax7.plot(sigma,ac_fold_BA,c='darkslateblue',linewidth=5,zorder=2)
+ax7.scatter(sigma,ac_fold_BA,c='darkslateblue',marker='o',s=150,zorder=2)
+
+ax7.plot(sigma,dev_fold_BA,c='darkorange',linewidth=5,zorder=1)
+ax7.scatter(sigma,dev_fold_BA,c='darkorange',marker='o',s=150,zorder=1)
+
+ax7.set_xlim(-0.0025,0.055)
+ax7.set_xticks([0.0025, 0.01, 0.02, 0.03, 0.04, 0.05])
+ax7.set_xticklabels(['0.25', '1', '2', '3', '4', '5'])
+ax7.annotate(
+    r'$\times 10^{-2}$',
+    xy=(1, 0), xycoords='axes fraction',
+    xytext=(8, -2), textcoords='offset points',
+    ha='left', va='top',fontsize=18
+)
+
+ax7.set_ylim(0.15,1.05)
+ax7.set_yticks([0.2,0.6,1])
+ax7.set_yticklabels(['0.2','0.6','1'])
+
+ax7.tick_params(direction='in', length=10)
+ax7.minorticks_on()
+ax7.tick_params(axis='x', which='minor', bottom=False)
+ax7.tick_params(axis='y', which='minor', direction='in', length=5)
+
+ax7.set_xlabel('Noise amplitude',font_x,labelpad=20)
+
+ax7.text(-0.2,1.05,'(f)',ha='left', transform=ax7.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax7.set_title('Mutualistic network (BA)', fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+
+################################################################################################
+
+ax8.plot(sigma,dynamics_rate,c='crimson',linewidth=4,zorder=3)
+ax8.scatter(sigma,dynamics_rate,c='crimson',marker='o',s=80,zorder=3)
+
+ax8.plot(sigma,dev_rate,c='darkorange',linewidth=4,zorder=1)
+ax8.scatter(sigma,dev_rate,c='darkorange',marker='o',s=80,zorder=1)
+
+ax8.set_xlim(-0.0025,0.055)
+ax8.set_xticks([0.0025, 0.01, 0.02, 0.03, 0.04, 0.05])
+ax8.set_xticklabels(['0.25', '1', '2', '3', '4', '5'])
+ax8.annotate(
+    r'$\times 10^{-2}$',
+    xy=(1, 0), xycoords='axes fraction',
+    xytext=(8, -2), textcoords='offset points',
+    ha='left', va='top',fontsize=18
+)
+
+ax8.set_ylim(0.73,1.02)
+ax8.set_yticks([0.75,1])
+ax8.set_yticklabels(['0.75','1'])
+
+ax8.tick_params(direction='in', length=10)
+ax8.minorticks_on()
+ax8.tick_params(axis='x', which='minor', bottom=False)
+ax8.tick_params(axis='y', which='minor', direction='in', length=5)
+
+ax8.set_xlabel('Noise amplitude', font_x, labelpad=20)
+
+ax8.text(-0.2,1.05,'(g)',ha='left', transform=ax8.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax8.set_title('Classification', fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
 
 ################################################################################################
 
@@ -268,8 +310,8 @@ legend_dev = mlines.Line2D([], [], color='darkorange',linestyle='-',linewidth=5,
 
 fig.legend(handles = [legend_dynamics, legend_ac, legend_dev],
             labels = ['Dynamics-based EWS','Lag-1 AC','Dynamical eigenvalue'],
-              loc='upper center', bbox_to_anchor=(0.5,1.02), ncol=3, frameon=False, 
+              loc='upper center', bbox_to_anchor=(0.88,0.85), ncol=1, frameon=False, 
               prop=font_manager.FontProperties(family='Arial', size=35))
 
-plt.subplots_adjust(top=0.85, bottom=0.08, left=0.06, right=0.95, hspace=0.3, wspace=0.3)
+plt.subplots_adjust(top=0.95, bottom=0.08, left=0.05, right=0.96, hspace=0.3, wspace=0.3)
 plt.savefig('../figures/SFIG8.pdf',format='pdf')
