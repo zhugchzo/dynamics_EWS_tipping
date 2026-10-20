@@ -185,4 +185,4 @@ fig.legend(handles = [legend_state, legend_pstate, legend_bif, legend_esti_re_v1
               prop=font_manager.FontProperties(family='Arial', size=40, weight='bold'),handletextpad=0.4)
 
 plt.subplots_adjust(top=0.7, bottom=0.04, left=0.05, right=0.99, wspace=0.2)
-plt.savefig('../figures/SFIG10.1.pdf',format='pdf')
+plt.savefig('../figures/SFIG13.1.pdf',format='pdf')

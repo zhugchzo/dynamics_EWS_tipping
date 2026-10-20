@@ -1,201 +1,120 @@
-import numpy as np
-import pandas as pd
-from sklearn.metrics import roc_curve, auc
+import pandas
 import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
+from matplotlib import font_manager
 
-font_x = {'family':'Arial','weight':'normal','size': 12}
-font_y = {'family':'Arial','weight':'normal','size': 12}
+font_x = {'family':'Arial','weight':'normal','size': 60}
+font_y = {'family':'Arial','weight':'normal','size': 60}
 
 plt.rcParams['font.family'] = 'Arial'
 plt.rcParams['axes.labelweight'] = 'normal'
-plt.rcParams['xtick.labelsize'] = 10
-plt.rcParams['ytick.labelsize'] = 10
+plt.rcParams['xtick.labelsize'] = 45
+plt.rcParams['ytick.labelsize'] = 45
+
+fig, axs = plt.subplots(2, 5, figsize=(48,20))
+
+train_length = 500
+length = 1000
+
+node_ratio = [0.1, 0.2, 0.3, 0.4, 0.5]
+fig_label_ER = ['(a)', '(b)', '(c)', '(d)', '(e)']
+fig_label_BA = ['(f)', '(g)', '(h)', '(i)', '(j)']
+
+for ii in range(len(node_ratio)):
+
+    ax = axs[0,ii]
+
+    df_fold_ER_results = pandas.read_csv('../results/mean_lambda/partial/fold_ER_mean_lambda_{}.csv'.format(node_ratio[ii]))
+
+    t_fold_ER = df_fold_ER_results['Time'] + 501
+
+    fold_ER_esti_re = df_fold_ER_results['esti_re_mean']
+    fold_ER_esti_re_lower = df_fold_ER_results['esti_re_ci_lower']
+    fold_ER_esti_re_upper = df_fold_ER_results['esti_re_ci_upper']
+
+    fold_ER_esti_im1 = df_fold_ER_results['esti_im_mean']
+    fold_ER_esti_im1_lower = df_fold_ER_results['esti_im_ci_lower']
+    fold_ER_esti_im1_upper = df_fold_ER_results['esti_im_ci_upper']
 
 ################################################################################################
 
-n = 400
+    ax.plot(t_fold_ER,fold_ER_esti_re,c='crimson',linewidth=6,alpha=0.9,zorder=2)
+    ax.fill_between(t_fold_ER,fold_ER_esti_re_lower,fold_ER_esti_re_upper,color='crimson',alpha=0.3,linewidth=0,zorder=2)
+    ax.plot(t_fold_ER,fold_ER_esti_im1,c='royalblue',linewidth=6,alpha=0.9,zorder=2)
+    ax.fill_between(t_fold_ER,fold_ER_esti_im1_lower,fold_ER_esti_im1_upper,color='royalblue',alpha=0.3,linewidth=0,zorder=2)
+    ax.set_xlim(480,1020)
+    ax.set_xticks([500,1000])
+    ax.set_xticklabels(['500','1000'])
+    ax.set_ylim(-0.24,0.24)
+    ax.set_yticks([-0.2,0,0.2])
+    ax.set_yticklabels(['-0.2','0','0.2'])
+    ax.tick_params(direction='in', length=10)
+    ax.minorticks_on()
+    ax.tick_params(axis='x', which='minor', bottom=False)
+    ax.tick_params(axis='y', which='minor', direction='in', length=5)
+    ax.text(0.06,0.88,fig_label_ER[ii],ha='left', transform=ax.transAxes,fontdict={'family':'Arial','size':60,'weight':'normal'})
+    ax.hlines(y=0, xmin=480, xmax=1020, color='grey', linestyle='--', linewidth=4, alpha=0.5, zorder=0)
 
-label = np.concatenate((np.ones(n), np.zeros(n)), axis=0)
+    ER_str = 'ER network\n' + r'$\rho_{{\text{{obs}}}}={}$'.format(node_ratio[ii])
+    ax.text(0.3,0.85, ER_str, transform=ax.transAxes, fontsize=45, verticalalignment='center')
 
-################################################################################################
-
-fold_ER_singlev = pd.read_csv('../results/ROC/fold_ER/singlev_tau.csv')
-fold_ER_null_singlev = pd.read_csv('../results/ROC/fold_ER/singlev_tau_null.csv')
-
-fold_BA_singlev = pd.read_csv('../results/ROC/fold_BA/singlev_tau.csv')
-fold_BA_null_singlev = pd.read_csv('../results/ROC/fold_BA/singlev_tau_null.csv')
-
-trans_singlev = pd.read_csv('../results/ROC/trans/singlev_tau.csv')
-trans_null_singlev = pd.read_csv('../results/ROC/trans/singlev_tau_null.csv')
-
-sup_hopf_singlev = pd.read_csv('../results/ROC/sup_hopf/singlev_tau.csv')
-sup_hopf_null_singlev = pd.read_csv('../results/ROC/sup_hopf/singlev_tau_null.csv')
-
-sub_hopf_singlev = pd.read_csv('../results/ROC/sub_hopf/singlev_tau.csv')
-sub_hopf_null_singlev = pd.read_csv('../results/ROC/sub_hopf/singlev_tau_null.csv')
-
-################################################################################################
-
-fig, axs = plt.subplots(1, 5, figsize=(12,3))
-
-for ax in axs:
-    ax.set_aspect('equal') 
-
-ax1, ax2, ax3, ax4, ax5 = axs[0], axs[1], axs[2], axs[3], axs[4]
+    # if ii == 0:
+    #     ax.set_ylabel('Re',font_y)
+    #     ax.yaxis.set_label_coords(-0.2, 0.5)
 
 ################################################################################################
 
-singlev_tau_ER = fold_ER_singlev['tau'].to_numpy()
-null_singlev_tau_ER = fold_ER_null_singlev['tau'].to_numpy()
+for ii in range(len(node_ratio)):
 
-singlev_tau_BA = fold_BA_singlev['tau'].to_numpy()
-null_singlev_tau_BA = fold_BA_null_singlev['tau'].to_numpy()
+    ax = axs[1,ii]
 
-singlev_ER = np.concatenate((singlev_tau_ER, null_singlev_tau_ER), axis=0)
-singlev_BA = np.concatenate((singlev_tau_BA, null_singlev_tau_BA), axis=0)
+    df_fold_ER_results = pandas.read_csv('../results/mean_lambda/partial/fold_BA_mean_lambda_{}.csv'.format(node_ratio[ii]))
 
-fpr_singlev_ER, tpr_singlev_ER, thresholds_singlev_ER = roc_curve(label, singlev_ER)
-auc_singlev_ER = auc(fpr_singlev_ER, tpr_singlev_ER)
+    t_fold_ER = df_fold_ER_results['Time'] + 501
 
-fpr_singlev_BA, tpr_singlev_BA, thresholds_singlev_BA = roc_curve(label, singlev_BA)
-auc_singlev_BA = auc(fpr_singlev_BA, tpr_singlev_BA)
+    fold_ER_esti_re = df_fold_ER_results['esti_re_mean']
+    fold_ER_esti_re_lower = df_fold_ER_results['esti_re_ci_lower']
+    fold_ER_esti_re_upper = df_fold_ER_results['esti_re_ci_upper']
 
-################################################################################################
-
-singlev_tau = trans_singlev['tau'].to_numpy()
-null_singlev_tau = trans_null_singlev['tau'].to_numpy()
-
-singlev = np.concatenate((singlev_tau, null_singlev_tau), axis=0)
-
-fpr_singlev, tpr_singlev, thresholds_singlev = roc_curve(label, singlev)
-auc_singlev = auc(fpr_singlev, tpr_singlev)
-
-textstr = '\n'.join([
-    r'$\text{A} = %.2f$' % auc_singlev
-])
-
-ax1.plot(fpr_singlev, tpr_singlev, c='crimson',linewidth=2,zorder=3)
-ax1.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
-
-ax1.text(0.45, 0.35, textstr, transform=ax1.transAxes, fontsize=12,
-         verticalalignment='top')
-
-ax1.set_xlabel('False positive rate',font_x)
-ax1.set_ylabel('True positive rate',font_y)
-
-ax1.set_xticks([0,0.5,1])
-ax1.set_xticklabels(['0','0.5','1'])
-ax1.set_yticks([0,0.5,1])
-ax1.set_yticklabels(['0','0.5','1'])
-
-ax1.set_title('Predator-prey (transcritical)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
-ax1.text(0.8, 0.7,'(a)',ha='left', transform=ax1.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
+    fold_ER_esti_im1 = df_fold_ER_results['esti_im_mean']
+    fold_ER_esti_im1_lower = df_fold_ER_results['esti_im_ci_lower']
+    fold_ER_esti_im1_upper = df_fold_ER_results['esti_im_ci_upper']
 
 ################################################################################################
 
-singlev_tau = sup_hopf_singlev['tau'].to_numpy()
-null_singlev_tau = sup_hopf_null_singlev['tau'].to_numpy()
+    ax.plot(t_fold_ER,fold_ER_esti_re,c='crimson',linewidth=6,alpha=0.9,zorder=2)
+    ax.fill_between(t_fold_ER,fold_ER_esti_re_lower,fold_ER_esti_re_upper,color='crimson',alpha=0.3,linewidth=0,zorder=2)
+    ax.plot(t_fold_ER,fold_ER_esti_im1,c='royalblue',linewidth=6,alpha=0.9,zorder=2)
+    ax.fill_between(t_fold_ER,fold_ER_esti_im1_lower,fold_ER_esti_im1_upper,color='royalblue',alpha=0.3,linewidth=0,zorder=2)
+    ax.set_xlim(480,1020)
+    ax.set_xticks([500,1000])
+    ax.set_xticklabels(['500','1000'])
+    ax.set_ylim(-0.72,0.72)
+    ax.set_yticks([-0.6,-0,0.6])
+    ax.set_yticklabels(['-0.6','0','0.6'])
+    ax.tick_params(direction='in', length=10)
+    ax.minorticks_on()
+    ax.tick_params(axis='x', which='minor', bottom=False)
+    ax.tick_params(axis='y', which='minor', direction='in', length=5)
+    ax.text(0.06,0.88,fig_label_BA[ii],ha='left', transform=ax.transAxes,fontdict={'family':'Arial','size':60,'weight':'normal'})
+    ax.hlines(y=0, xmin=480, xmax=1020, color='grey', linestyle='--', linewidth=4, alpha=0.5, zorder=0)
 
-singlev = np.concatenate((singlev_tau, null_singlev_tau), axis=0)
+    BA_str = 'BA network\n' + r'$\rho_{{\text{{obs}}}}={}$'.format(node_ratio[ii])
+    ax.text(0.3,0.85, BA_str, transform=ax.transAxes, fontsize=45, verticalalignment='center')
 
-fpr_singlev, tpr_singlev, thresholds_singlev = roc_curve(label, singlev)
-auc_singlev = auc(fpr_singlev, tpr_singlev)
+    # if ii == 0:
+    #     ax.set_ylabel('Re',font_y)
+    #     ax.yaxis.set_label_coords(-0.2, 0.5)
 
-textstr = '\n'.join([
-    r'$\text{A} = %.2f$' % auc_singlev
-])
+    ax.set_xlabel('Time',font_x,labelpad=5)
 
-ax2.plot(fpr_singlev, tpr_singlev, c='crimson',linewidth=2,zorder=3)
-ax2.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+legend_esti_re = mlines.Line2D([], [], color='crimson', linestyle='-',linewidth=8,alpha=0.9)
+legend_esti_im = mlines.Line2D([], [], color='royalblue', linestyle='-',linewidth=8,alpha=0.9)
 
-ax2.text(0.45, 0.35, textstr, transform=ax2.transAxes, fontsize=12,
-         verticalalignment='top')
+fig.legend(handles = [legend_esti_re, legend_esti_im],
+            labels = ['Estimated Re', 'Estimated Im'],
+              loc='upper center', bbox_to_anchor=(0.5,1.03), ncol=2, frameon=False, 
+              prop=font_manager.FontProperties(family='Arial', size=60, weight='bold'))
 
-ax2.set_xlabel('False positive rate',font_x)
-
-ax2.set_xticks([0,0.5,1])
-ax2.set_xticklabels(['0','0.5','1'])
-ax2.set_yticks([0,0.5,1])
-ax2.set_yticklabels(['0','0.5','1'])
-
-ax2.set_title('Predator-prey (Hopf)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
-ax2.text(0.8, 0.7,'(b)',ha='left', transform=ax2.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
-
-################################################################################################
-
-singlev_tau = sub_hopf_singlev['tau'].to_numpy()
-null_singlev_tau = sub_hopf_null_singlev['tau'].to_numpy()
-
-singlev = np.concatenate((singlev_tau, null_singlev_tau), axis=0)
-
-fpr_singlev, tpr_singlev, thresholds_singlev = roc_curve(label, singlev)
-auc_singlev = auc(fpr_singlev, tpr_singlev)
-
-textstr = '\n'.join([
-    r'$\text{A} = %.2f$' % auc_singlev
-])
-
-ax3.plot(fpr_singlev, tpr_singlev, c='crimson',linewidth=2,zorder=3)
-ax3.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
-
-ax3.text(0.45, 0.35, textstr, transform=ax3.transAxes, fontsize=12,
-         verticalalignment='top',zorder=3)
-
-ax3.set_xlabel('False positive rate',font_x)
-
-ax3.set_xticks([0,0.5,1])
-ax3.set_xticklabels(['0','0.5','1'])
-ax3.set_yticks([0,0.5,1])
-ax3.set_yticklabels(['0','0.5','1'])
-
-ax3.set_title('Epidemic', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
-ax3.text(0.8, 0.7,'(c)',ha='left', transform=ax3.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
-
-################################################################################################
-
-textstr = '\n'.join([
-    r'$\text{A} = %.2f$' % auc_singlev_ER
-])
-
-ax4.plot(fpr_singlev_ER, tpr_singlev_ER, c='crimson',linewidth=2,zorder=3)
-ax4.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
-
-ax4.text(0.45, 0.35, textstr, transform=ax4.transAxes, fontsize=12,
-         verticalalignment='top')
-
-ax4.set_xlabel('False positive rate',font_x)
-
-ax4.set_xticks([0,0.5,1])
-ax4.set_xticklabels(['0','0.5','1'])
-ax4.set_yticks([0,0.5,1])
-ax4.set_yticklabels(['0','0.5','1'])
-
-ax4.set_title('Mutualistic network (ER)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans', fontstyle= 'italic', y=1.02)
-ax4.text(0.8, 0.7,'(d)',ha='left', transform=ax4.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
-
-################################################################################################
-
-textstr = '\n'.join([
-    r'$\text{A} = %.2f$' % auc_singlev_BA
-])
-
-ax5.plot(fpr_singlev_BA, tpr_singlev_BA, c='crimson',linewidth=2,zorder=3)
-ax5.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
-
-ax5.text(0.45, 0.35, textstr, transform=ax5.transAxes, fontsize=12,
-         verticalalignment='top')
-
-ax5.set_xlabel('False positive rate',font_x)
-
-ax5.set_xticks([0,0.5,1])
-ax5.set_xticklabels(['0','0.5','1'])
-ax5.set_yticks([0,0.5,1])
-ax5.set_yticklabels(['0','0.5','1'])
-
-ax5.set_title('Mutualistic network (BA)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
-ax5.text(0.8, 0.7,'(e)',ha='left', transform=ax5.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
-
-################################################################################################
-
-plt.subplots_adjust(top=0.92, bottom=0.08, left=0.05, right=0.99, wspace=0.3)
+plt.subplots_adjust(top=0.9, bottom=0.07, left=0.03, right=0.99, hspace=0.2, wspace=0.25)
 plt.savefig('../figures/SFIG11.pdf',format='pdf')

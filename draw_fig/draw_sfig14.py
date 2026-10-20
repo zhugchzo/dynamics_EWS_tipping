@@ -1,105 +1,201 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
+from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
-from matplotlib import font_manager
 
-font_x = {'family':'Arial','weight':'medium','size': 25}
-font_y = {'family':'Arial','weight':'medium','size': 25}
+font_x = {'family':'Arial','weight':'normal','size': 12}
+font_y = {'family':'Arial','weight':'normal','size': 12}
 
 plt.rcParams['font.family'] = 'Arial'
 plt.rcParams['axes.labelweight'] = 'normal'
-plt.rcParams['xtick.labelsize'] = 25
-plt.rcParams['ytick.labelsize'] = 25
-
-# df for ax1
-df_ER = pd.read_csv('../results/ROC/fold_ER/auc_partial.csv')
-# df for ax2
-df_BA = pd.read_csv('../results/ROC/fold_BA/auc_partial.csv')
-
-node_ratio = [0.1, 0.2, 0.3, 0.4, 0.5]
-
-data_ER = df_ER[['partial_auc', 'zero_ratio']].to_numpy()
-data_BA = df_BA[['partial_auc', 'zero_ratio']].to_numpy()
+plt.rcParams['xtick.labelsize'] = 10
+plt.rcParams['ytick.labelsize'] = 10
 
 ################################################################################################
 
-fig, axs = plt.subplots(1, 2, figsize=(12,7))
+n = 400
 
-ax1, ax2 = axs[0], axs[1]
-
-# ax1
-
-auc_ax1 = data_ER[:,0]
-ratio_ax1 = data_ER[:,1]
-
-ax1.plot(node_ratio,auc_ax1,c='crimson',linewidth=4,zorder=3)
-ax1.scatter(node_ratio,auc_ax1,c='crimson',marker='o',s=80,zorder=3)
-ax1.plot(node_ratio, ratio_ax1, c='royalblue', linewidth=4, zorder=2)
-ax1.scatter(node_ratio, ratio_ax1, c='royalblue', marker='o', s=80, zorder=2)
-
-ax1.set_xlim(0.05,0.55)
-ax1.set_xticks([0.1,0.2,0.3,0.4,0.5])
-ax1.set_ylim(0.78,1.02)
-ax1.set_yticks([0.8,0.9,1])
-ax1.set_yticklabels(['0.8','0.9','1'])
-ax1.tick_params(direction='in', length=10)
-ax1.minorticks_on()
-ax1.tick_params(axis='x', which='minor', bottom=False)
-ax1.tick_params(axis='y', which='minor', direction='in', length=5)
-
-ax1.set_xlabel(r'Observed fraction ($\rho_{\text{obs}}$)',font_x,labelpad=10)
-
-# ax1.set_ylabel('AUC',font_y)
-# ax1.yaxis.set_label_coords(-0.2, 0.5)
-# ax1_right = ax1.twinx()
-# ax1_right.set_ylim(0.75, 1.05)
-# ax1_right.set_yticks([0.8, 0.9, 1])
-# ax1_right.set_yticklabels(['0.8', '0.9', '1'])
-# ax1_right.tick_params(direction='in', length=10)
-# ax1_right.minorticks_on()
-# ax1_right.tick_params(axis='y', which='minor', direction='in', length=5)
-# ax1_right.set_ylabel('$\rho_{\text{Im=0}}$', font_y)
-
-# ax1_right.yaxis.set_label_coords(1.2, 0.5)
-
-ax1.set_title('ER network', fontsize=24, fontweight='normal', fontfamily='DejaVu Sans', fontstyle= 'italic', y=1.02)
-ax1.text(0.1, 0.2,'(a)',ha='left', transform=ax1.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
-
-# ax2
-
-auc_ax2 = data_BA[:,0]
-ratio_ax2 = data_BA[:,1]
-
-ax2.plot(node_ratio,auc_ax2,c='crimson',linewidth=4,zorder=3)
-ax2.scatter(node_ratio,auc_ax2,c='crimson',marker='o',s=80,zorder=3)
-ax2.plot(node_ratio, ratio_ax2, c='royalblue', linewidth=4, zorder=2)
-ax2.scatter(node_ratio, ratio_ax2, c='royalblue', marker='o', s=80, zorder=2)
-
-ax2.set_xlim(0.05,0.55)
-ax2.set_xticks([0.1,0.2,0.3,0.4,0.5])
-ax2.set_ylim(0.78,1.02)
-ax2.set_yticks([0.8,0.9,1])
-ax2.set_yticklabels(['0.8','0.9','1'])
-ax2.tick_params(direction='in', length=10)
-ax2.minorticks_on()
-ax2.tick_params(axis='x', which='minor', bottom=False)
-ax2.tick_params(axis='y', which='minor', direction='in', length=5)
-
-ax2.set_xlabel(r'Observed fraction ($\rho_{\text{obs}}$)',font_x,labelpad=10)
-
-ax2.set_title('BA network', fontsize=24, fontweight='normal', fontfamily='DejaVu Sans', fontstyle= 'italic', y=1.02)
-ax2.text(0.1, 0.2,'(b)',ha='left', transform=ax2.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+label = np.concatenate((np.ones(n), np.zeros(n)), axis=0)
 
 ################################################################################################
 
-legend_auc = mlines.Line2D([], [], color='crimson',linestyle='-',linewidth=4,marker='o',markersize=12)
-legend_rho = mlines.Line2D([], [], color='royalblue',linestyle='-',linewidth=4,marker='o',markersize=12)
+fold_ER_singlev = pd.read_csv('../results/ROC/fold_ER/singlev_tau.csv')
+fold_ER_null_singlev = pd.read_csv('../results/ROC/fold_ER/singlev_tau_null.csv')
 
-fig.legend(handles = [legend_auc, legend_rho],
-            labels = ['AUC', r'$\rho_{\text{Im=0}}$'],
-              loc='upper center', bbox_to_anchor=(0.5,1.04), ncol=2, frameon=False, 
-              prop=font_manager.FontProperties(family='Arial', size=30))
+fold_BA_singlev = pd.read_csv('../results/ROC/fold_BA/singlev_tau.csv')
+fold_BA_null_singlev = pd.read_csv('../results/ROC/fold_BA/singlev_tau_null.csv')
 
-plt.subplots_adjust(top=0.81, bottom=0.13, left=0.06, right=0.98, wspace=0.2)
+trans_singlev = pd.read_csv('../results/ROC/trans/singlev_tau.csv')
+trans_null_singlev = pd.read_csv('../results/ROC/trans/singlev_tau_null.csv')
+
+sup_hopf_singlev = pd.read_csv('../results/ROC/sup_hopf/singlev_tau.csv')
+sup_hopf_null_singlev = pd.read_csv('../results/ROC/sup_hopf/singlev_tau_null.csv')
+
+sub_hopf_singlev = pd.read_csv('../results/ROC/sub_hopf/singlev_tau.csv')
+sub_hopf_null_singlev = pd.read_csv('../results/ROC/sub_hopf/singlev_tau_null.csv')
+
+################################################################################################
+
+fig, axs = plt.subplots(1, 5, figsize=(12,3))
+
+for ax in axs:
+    ax.set_aspect('equal') 
+
+ax1, ax2, ax3, ax4, ax5 = axs[0], axs[1], axs[2], axs[3], axs[4]
+
+################################################################################################
+
+singlev_tau_ER = fold_ER_singlev['tau'].to_numpy()
+null_singlev_tau_ER = fold_ER_null_singlev['tau'].to_numpy()
+
+singlev_tau_BA = fold_BA_singlev['tau'].to_numpy()
+null_singlev_tau_BA = fold_BA_null_singlev['tau'].to_numpy()
+
+singlev_ER = np.concatenate((singlev_tau_ER, null_singlev_tau_ER), axis=0)
+singlev_BA = np.concatenate((singlev_tau_BA, null_singlev_tau_BA), axis=0)
+
+fpr_singlev_ER, tpr_singlev_ER, thresholds_singlev_ER = roc_curve(label, singlev_ER)
+auc_singlev_ER = auc(fpr_singlev_ER, tpr_singlev_ER)
+
+fpr_singlev_BA, tpr_singlev_BA, thresholds_singlev_BA = roc_curve(label, singlev_BA)
+auc_singlev_BA = auc(fpr_singlev_BA, tpr_singlev_BA)
+
+################################################################################################
+
+singlev_tau = trans_singlev['tau'].to_numpy()
+null_singlev_tau = trans_null_singlev['tau'].to_numpy()
+
+singlev = np.concatenate((singlev_tau, null_singlev_tau), axis=0)
+
+fpr_singlev, tpr_singlev, thresholds_singlev = roc_curve(label, singlev)
+auc_singlev = auc(fpr_singlev, tpr_singlev)
+
+textstr = '\n'.join([
+    r'$\text{A} = %.2f$' % auc_singlev
+])
+
+ax1.plot(fpr_singlev, tpr_singlev, c='crimson',linewidth=2,zorder=3)
+ax1.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+
+ax1.text(0.45, 0.35, textstr, transform=ax1.transAxes, fontsize=12,
+         verticalalignment='top')
+
+ax1.set_xlabel('False positive rate',font_x)
+ax1.set_ylabel('True positive rate',font_y)
+
+ax1.set_xticks([0,0.5,1])
+ax1.set_xticklabels(['0','0.5','1'])
+ax1.set_yticks([0,0.5,1])
+ax1.set_yticklabels(['0','0.5','1'])
+
+ax1.set_title('Predator-prey (transcritical)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax1.text(0.8, 0.7,'(a)',ha='left', transform=ax1.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
+
+################################################################################################
+
+singlev_tau = sup_hopf_singlev['tau'].to_numpy()
+null_singlev_tau = sup_hopf_null_singlev['tau'].to_numpy()
+
+singlev = np.concatenate((singlev_tau, null_singlev_tau), axis=0)
+
+fpr_singlev, tpr_singlev, thresholds_singlev = roc_curve(label, singlev)
+auc_singlev = auc(fpr_singlev, tpr_singlev)
+
+textstr = '\n'.join([
+    r'$\text{A} = %.2f$' % auc_singlev
+])
+
+ax2.plot(fpr_singlev, tpr_singlev, c='crimson',linewidth=2,zorder=3)
+ax2.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+
+ax2.text(0.45, 0.35, textstr, transform=ax2.transAxes, fontsize=12,
+         verticalalignment='top')
+
+ax2.set_xlabel('False positive rate',font_x)
+
+ax2.set_xticks([0,0.5,1])
+ax2.set_xticklabels(['0','0.5','1'])
+ax2.set_yticks([0,0.5,1])
+ax2.set_yticklabels(['0','0.5','1'])
+
+ax2.set_title('Predator-prey (Hopf)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax2.text(0.8, 0.7,'(b)',ha='left', transform=ax2.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
+
+################################################################################################
+
+singlev_tau = sub_hopf_singlev['tau'].to_numpy()
+null_singlev_tau = sub_hopf_null_singlev['tau'].to_numpy()
+
+singlev = np.concatenate((singlev_tau, null_singlev_tau), axis=0)
+
+fpr_singlev, tpr_singlev, thresholds_singlev = roc_curve(label, singlev)
+auc_singlev = auc(fpr_singlev, tpr_singlev)
+
+textstr = '\n'.join([
+    r'$\text{A} = %.2f$' % auc_singlev
+])
+
+ax3.plot(fpr_singlev, tpr_singlev, c='crimson',linewidth=2,zorder=3)
+ax3.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+
+ax3.text(0.45, 0.35, textstr, transform=ax3.transAxes, fontsize=12,
+         verticalalignment='top',zorder=3)
+
+ax3.set_xlabel('False positive rate',font_x)
+
+ax3.set_xticks([0,0.5,1])
+ax3.set_xticklabels(['0','0.5','1'])
+ax3.set_yticks([0,0.5,1])
+ax3.set_yticklabels(['0','0.5','1'])
+
+ax3.set_title('Epidemic', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax3.text(0.8, 0.7,'(c)',ha='left', transform=ax3.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
+
+################################################################################################
+
+textstr = '\n'.join([
+    r'$\text{A} = %.2f$' % auc_singlev_ER
+])
+
+ax4.plot(fpr_singlev_ER, tpr_singlev_ER, c='crimson',linewidth=2,zorder=3)
+ax4.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+
+ax4.text(0.45, 0.35, textstr, transform=ax4.transAxes, fontsize=12,
+         verticalalignment='top')
+
+ax4.set_xlabel('False positive rate',font_x)
+
+ax4.set_xticks([0,0.5,1])
+ax4.set_xticklabels(['0','0.5','1'])
+ax4.set_yticks([0,0.5,1])
+ax4.set_yticklabels(['0','0.5','1'])
+
+ax4.set_title('Mutualistic network (ER)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans', fontstyle= 'italic', y=1.02)
+ax4.text(0.8, 0.7,'(d)',ha='left', transform=ax4.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
+
+################################################################################################
+
+textstr = '\n'.join([
+    r'$\text{A} = %.2f$' % auc_singlev_BA
+])
+
+ax5.plot(fpr_singlev_BA, tpr_singlev_BA, c='crimson',linewidth=2,zorder=3)
+ax5.plot([0, 1], [0, 1], linestyle='--', linewidth=1, color='silver', zorder=0)
+
+ax5.text(0.45, 0.35, textstr, transform=ax5.transAxes, fontsize=12,
+         verticalalignment='top')
+
+ax5.set_xlabel('False positive rate',font_x)
+
+ax5.set_xticks([0,0.5,1])
+ax5.set_xticklabels(['0','0.5','1'])
+ax5.set_yticks([0,0.5,1])
+ax5.set_yticklabels(['0','0.5','1'])
+
+ax5.set_title('Mutualistic network (BA)', fontsize=12, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax5.text(0.8, 0.7,'(e)',ha='left', transform=ax5.transAxes,fontdict={'family':'Arial','size':17,'weight':'normal'})
+
+################################################################################################
+
+plt.subplots_adjust(top=0.92, bottom=0.08, left=0.05, right=0.99, wspace=0.3)
 plt.savefig('../figures/SFIG14.pdf',format='pdf')

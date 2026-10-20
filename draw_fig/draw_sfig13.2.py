@@ -172,4 +172,4 @@ ax4.set_xlabel('Time',font_x,labelpad=15)
 ax5.set_xlabel('Time',font_x,labelpad=15)
 
 plt.subplots_adjust(top=0.98, bottom=0.15, left=0.05, right=0.99, wspace=0.2)
-plt.savefig('../figures/SFIG10.2.pdf',format='pdf')
+plt.savefig('../figures/SFIG13.2.pdf',format='pdf')
