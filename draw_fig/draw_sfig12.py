@@ -1,105 +1,120 @@
-import pandas as pd
-import numpy as np
+import pandas
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 from matplotlib import font_manager
 
-font_x = {'family':'Arial','weight':'medium','size': 25}
-font_y = {'family':'Arial','weight':'medium','size': 25}
+font_x = {'family':'Arial','weight':'normal','size': 60}
+font_y = {'family':'Arial','weight':'normal','size': 60}
 
 plt.rcParams['font.family'] = 'Arial'
 plt.rcParams['axes.labelweight'] = 'normal'
-plt.rcParams['xtick.labelsize'] = 25
-plt.rcParams['ytick.labelsize'] = 25
+plt.rcParams['xtick.labelsize'] = 45
+plt.rcParams['ytick.labelsize'] = 45
 
-# df for ax1
-df_ER = pd.read_csv('../results/ROC/fold_ER/auc_partial.csv')
-# df for ax2
-df_BA = pd.read_csv('../results/ROC/fold_BA/auc_partial.csv')
+fig, axs = plt.subplots(2, 5, figsize=(48,20))
+
+train_length = 500
+length = 1000
 
 node_ratio = [0.1, 0.2, 0.3, 0.4, 0.5]
+fig_label_ER = ['(a)', '(b)', '(c)', '(d)', '(e)']
+fig_label_BA = ['(f)', '(g)', '(h)', '(i)', '(j)']
 
-data_ER = df_ER[['partial_auc', 'zero_ratio']].to_numpy()
-data_BA = df_BA[['partial_auc', 'zero_ratio']].to_numpy()
+for ii in range(len(node_ratio)):
 
-################################################################################################
+    ax = axs[0,ii]
 
-fig, axs = plt.subplots(1, 2, figsize=(12,7))
+    df_fold_ER_results = pandas.read_csv('../results/mean_lambda/partial/fold_ER_mean_lambda_{}.csv'.format(node_ratio[ii]))
 
-ax1, ax2 = axs[0], axs[1]
+    t_fold_ER = df_fold_ER_results['Time'] + 501
 
-# ax1
+    fold_ER_esti_re = df_fold_ER_results['esti_re_mean']
+    fold_ER_esti_re_lower = df_fold_ER_results['esti_re_ci_lower']
+    fold_ER_esti_re_upper = df_fold_ER_results['esti_re_ci_upper']
 
-auc_ax1 = data_ER[:,0]
-ratio_ax1 = data_ER[:,1]
-
-ax1.plot(node_ratio,auc_ax1,c='crimson',linewidth=4,zorder=3)
-ax1.scatter(node_ratio,auc_ax1,c='crimson',marker='o',s=80,zorder=3)
-ax1.plot(node_ratio, ratio_ax1, c='royalblue', linewidth=4, zorder=2)
-ax1.scatter(node_ratio, ratio_ax1, c='royalblue', marker='o', s=80, zorder=2)
-
-ax1.set_xlim(0.05,0.55)
-ax1.set_xticks([0.1,0.2,0.3,0.4,0.5])
-ax1.set_ylim(0.78,1.02)
-ax1.set_yticks([0.8,0.9,1])
-ax1.set_yticklabels(['0.8','0.9','1'])
-ax1.tick_params(direction='in', length=10)
-ax1.minorticks_on()
-ax1.tick_params(axis='x', which='minor', bottom=False)
-ax1.tick_params(axis='y', which='minor', direction='in', length=5)
-
-ax1.set_xlabel(r'Observed fraction ($\rho_{\text{obs}}$)',font_x,labelpad=10)
-
-# ax1.set_ylabel('AUC',font_y)
-# ax1.yaxis.set_label_coords(-0.2, 0.5)
-# ax1_right = ax1.twinx()
-# ax1_right.set_ylim(0.75, 1.05)
-# ax1_right.set_yticks([0.8, 0.9, 1])
-# ax1_right.set_yticklabels(['0.8', '0.9', '1'])
-# ax1_right.tick_params(direction='in', length=10)
-# ax1_right.minorticks_on()
-# ax1_right.tick_params(axis='y', which='minor', direction='in', length=5)
-# ax1_right.set_ylabel('$\rho_{\text{Im=0}}$', font_y)
-
-# ax1_right.yaxis.set_label_coords(1.2, 0.5)
-
-ax1.set_title('ER network', fontsize=24, fontweight='normal', fontfamily='DejaVu Sans', fontstyle= 'italic', y=1.02)
-ax1.text(0.1, 0.2,'(a)',ha='left', transform=ax1.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
-
-# ax2
-
-auc_ax2 = data_BA[:,0]
-ratio_ax2 = data_BA[:,1]
-
-ax2.plot(node_ratio,auc_ax2,c='crimson',linewidth=4,zorder=3)
-ax2.scatter(node_ratio,auc_ax2,c='crimson',marker='o',s=80,zorder=3)
-ax2.plot(node_ratio, ratio_ax2, c='royalblue', linewidth=4, zorder=2)
-ax2.scatter(node_ratio, ratio_ax2, c='royalblue', marker='o', s=80, zorder=2)
-
-ax2.set_xlim(0.05,0.55)
-ax2.set_xticks([0.1,0.2,0.3,0.4,0.5])
-ax2.set_ylim(0.78,1.02)
-ax2.set_yticks([0.8,0.9,1])
-ax2.set_yticklabels(['0.8','0.9','1'])
-ax2.tick_params(direction='in', length=10)
-ax2.minorticks_on()
-ax2.tick_params(axis='x', which='minor', bottom=False)
-ax2.tick_params(axis='y', which='minor', direction='in', length=5)
-
-ax2.set_xlabel(r'Observed fraction ($\rho_{\text{obs}}$)',font_x,labelpad=10)
-
-ax2.set_title('BA network', fontsize=24, fontweight='normal', fontfamily='DejaVu Sans', fontstyle= 'italic', y=1.02)
-ax2.text(0.1, 0.2,'(b)',ha='left', transform=ax2.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+    fold_ER_esti_im1 = df_fold_ER_results['esti_im_mean']
+    fold_ER_esti_im1_lower = df_fold_ER_results['esti_im_ci_lower']
+    fold_ER_esti_im1_upper = df_fold_ER_results['esti_im_ci_upper']
 
 ################################################################################################
 
-legend_auc = mlines.Line2D([], [], color='crimson',linestyle='-',linewidth=4,marker='o',markersize=12)
-legend_rho = mlines.Line2D([], [], color='royalblue',linestyle='-',linewidth=4,marker='o',markersize=12)
+    ax.plot(t_fold_ER,fold_ER_esti_re,c='crimson',linewidth=6,alpha=0.9,zorder=2)
+    ax.fill_between(t_fold_ER,fold_ER_esti_re_lower,fold_ER_esti_re_upper,color='crimson',alpha=0.3,linewidth=0,zorder=2)
+    ax.plot(t_fold_ER,fold_ER_esti_im1,c='royalblue',linewidth=6,alpha=0.9,zorder=2)
+    ax.fill_between(t_fold_ER,fold_ER_esti_im1_lower,fold_ER_esti_im1_upper,color='royalblue',alpha=0.3,linewidth=0,zorder=2)
+    ax.set_xlim(480,1020)
+    ax.set_xticks([500,1000])
+    ax.set_xticklabels(['500','1000'])
+    ax.set_ylim(-0.24,0.24)
+    ax.set_yticks([-0.2,0,0.2])
+    ax.set_yticklabels(['-0.2','0','0.2'])
+    ax.tick_params(direction='in', length=10)
+    ax.minorticks_on()
+    ax.tick_params(axis='x', which='minor', bottom=False)
+    ax.tick_params(axis='y', which='minor', direction='in', length=5)
+    ax.text(0.06,0.88,fig_label_ER[ii],ha='left', transform=ax.transAxes,fontdict={'family':'Arial','size':60,'weight':'normal'})
+    ax.hlines(y=0, xmin=480, xmax=1020, color='grey', linestyle='--', linewidth=4, alpha=0.5, zorder=0)
 
-fig.legend(handles = [legend_auc, legend_rho],
-            labels = ['AUC', r'$\rho_{\text{Im=0}}$'],
-              loc='upper center', bbox_to_anchor=(0.5,1.04), ncol=2, frameon=False, 
-              prop=font_manager.FontProperties(family='Arial', size=30))
+    ER_str = 'ER network\n' + r'$\rho_{{\text{{obs}}}}={}$'.format(node_ratio[ii])
+    ax.text(0.3,0.85, ER_str, transform=ax.transAxes, fontsize=45, verticalalignment='center')
 
-plt.subplots_adjust(top=0.81, bottom=0.13, left=0.06, right=0.98, wspace=0.2)
+    # if ii == 0:
+    #     ax.set_ylabel('Re',font_y)
+    #     ax.yaxis.set_label_coords(-0.2, 0.5)
+
+################################################################################################
+
+for ii in range(len(node_ratio)):
+
+    ax = axs[1,ii]
+
+    df_fold_ER_results = pandas.read_csv('../results/mean_lambda/partial/fold_BA_mean_lambda_{}.csv'.format(node_ratio[ii]))
+
+    t_fold_ER = df_fold_ER_results['Time'] + 501
+
+    fold_ER_esti_re = df_fold_ER_results['esti_re_mean']
+    fold_ER_esti_re_lower = df_fold_ER_results['esti_re_ci_lower']
+    fold_ER_esti_re_upper = df_fold_ER_results['esti_re_ci_upper']
+
+    fold_ER_esti_im1 = df_fold_ER_results['esti_im_mean']
+    fold_ER_esti_im1_lower = df_fold_ER_results['esti_im_ci_lower']
+    fold_ER_esti_im1_upper = df_fold_ER_results['esti_im_ci_upper']
+
+################################################################################################
+
+    ax.plot(t_fold_ER,fold_ER_esti_re,c='crimson',linewidth=6,alpha=0.9,zorder=2)
+    ax.fill_between(t_fold_ER,fold_ER_esti_re_lower,fold_ER_esti_re_upper,color='crimson',alpha=0.3,linewidth=0,zorder=2)
+    ax.plot(t_fold_ER,fold_ER_esti_im1,c='royalblue',linewidth=6,alpha=0.9,zorder=2)
+    ax.fill_between(t_fold_ER,fold_ER_esti_im1_lower,fold_ER_esti_im1_upper,color='royalblue',alpha=0.3,linewidth=0,zorder=2)
+    ax.set_xlim(480,1020)
+    ax.set_xticks([500,1000])
+    ax.set_xticklabels(['500','1000'])
+    ax.set_ylim(-0.72,0.72)
+    ax.set_yticks([-0.6,-0,0.6])
+    ax.set_yticklabels(['-0.6','0','0.6'])
+    ax.tick_params(direction='in', length=10)
+    ax.minorticks_on()
+    ax.tick_params(axis='x', which='minor', bottom=False)
+    ax.tick_params(axis='y', which='minor', direction='in', length=5)
+    ax.text(0.06,0.88,fig_label_BA[ii],ha='left', transform=ax.transAxes,fontdict={'family':'Arial','size':60,'weight':'normal'})
+    ax.hlines(y=0, xmin=480, xmax=1020, color='grey', linestyle='--', linewidth=4, alpha=0.5, zorder=0)
+
+    BA_str = 'BA network\n' + r'$\rho_{{\text{{obs}}}}={}$'.format(node_ratio[ii])
+    ax.text(0.3,0.85, BA_str, transform=ax.transAxes, fontsize=45, verticalalignment='center')
+
+    # if ii == 0:
+    #     ax.set_ylabel('Re',font_y)
+    #     ax.yaxis.set_label_coords(-0.2, 0.5)
+
+    ax.set_xlabel('Time',font_x,labelpad=5)
+
+legend_esti_re = mlines.Line2D([], [], color='crimson', linestyle='-',linewidth=8,alpha=0.9)
+legend_esti_im = mlines.Line2D([], [], color='royalblue', linestyle='-',linewidth=8,alpha=0.9)
+
+fig.legend(handles = [legend_esti_re, legend_esti_im],
+            labels = ['Estimated Re', 'Estimated Im'],
+              loc='upper center', bbox_to_anchor=(0.5,1.03), ncol=2, frameon=False, 
+              prop=font_manager.FontProperties(family='Arial', size=60, weight='bold'))
+
+plt.subplots_adjust(top=0.9, bottom=0.07, left=0.03, right=0.99, hspace=0.2, wspace=0.25)
 plt.savefig('../figures/SFIG12.pdf',format='pdf')

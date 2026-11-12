@@ -1,258 +1,317 @@
+import pandas
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
-from matplotlib.patches import Rectangle
+import matplotlib.lines as mlines
+from matplotlib import font_manager
 
-# =========================================================
-# 1. data
-# =========================================================
+font_x = {'family':'Arial','weight':'normal','size': 35}
+font_y = {'family':'Arial','weight':'normal','size': 35}
 
-df_fold = pd.read_csv('../results/ridge/fold/auc.csv',header=None)
-df_trans = pd.read_csv('../results/ridge/trans/auc.csv',header=None)
-df_sup_hopf = pd.read_csv('../results/ridge/sup_hopf/auc.csv',header=None)
-df_sub_hopf = pd.read_csv('../results/ridge/sub_hopf/auc.csv',header=None)
-df_fold_ER = pd.read_csv('../results/ridge/fold_ER/auc.csv',header=None)
-df_fold_BA = pd.read_csv('../results/ridge/fold_BA/auc.csv',header=None)
+plt.rcParams['font.family'] = 'Arial'
+plt.rcParams['axes.labelweight'] = 'normal'
+plt.rcParams['xtick.labelsize'] = 30
+plt.rcParams['ytick.labelsize'] = 30
 
-fold_auc = df_fold.iloc[1:, 1:].to_numpy(dtype=float)
-trans_auc = df_trans.iloc[1:, 1:].to_numpy(dtype=float)
-sup_hopf_auc = df_sup_hopf.iloc[1:, 1:].to_numpy(dtype=float)
-sub_hopf_auc = df_sub_hopf.iloc[1:, 1:].to_numpy(dtype=float)
-fold_ER_auc = df_fold_ER.iloc[1:, 1:].to_numpy(dtype=float)
-fold_BA_auc = df_fold_BA.iloc[1:, 1:].to_numpy(dtype=float)
+fig, axs = plt.subplots(2, 4, figsize=(28,15))
 
-data_list = [fold_auc, trans_auc, sup_hopf_auc, sub_hopf_auc, fold_ER_auc, fold_BA_auc]
+ax1, ax2, ax3, ax4 = axs[0,0], axs[0,1], axs[0,2], axs[0,3]
+ax5, ax6, ax7, ax8 = axs[1,0], axs[1,1], axs[1,2], axs[1,3]
 
-titles = ['Intraspecific competition','Predator-prey (transcritical)','Predator-prey (Hopf)',
-    'Epidemic','Mutualistic network (ER)','Mutualistic network (BA)']
+df_fold = pandas.read_csv('../results/noise/fold/auc.csv')
+df_trans = pandas.read_csv('../results/noise/trans/auc.csv')
+df_sup_hopf = pandas.read_csv('../results/noise/sup_hopf/auc.csv')
+df_sub_hopf = pandas.read_csv('../results/noise/sub_hopf/auc.csv')
+df_fold_ER = pandas.read_csv('../results/noise/fold_ER/auc.csv')
+df_fold_BA = pandas.read_csv('../results/noise/fold_BA/auc.csv')
 
-# x, y 每个格子的标签
-x_labels = ['0.001', '0.005', '0.01', '0.05', '0.1']
-y_labels = ['0.05', '0.04', '0.03', '0.02', '0.01']
+df_steady_rate = pandas.read_csv('../results/noise/auc_steady.csv')
 
-# =========================================================
+###################################################
 
-plt.rcParams.update({
-    "font.family": "Arial",
+sigma = [0.0025, 0.01, 0.02, 0.03, 0.04, 0.05]
 
-    "font.size": 16,
-    "xtick.labelsize": 15,
-    "ytick.labelsize": 15,
+###################################################
 
-    "axes.linewidth": 1.0,
-    "xtick.major.width": 1.0,
-    "ytick.major.width": 1.0,
-    "xtick.major.size": 4,
-    "ytick.major.size": 4,
-})
+dynamics_fold = df_fold['dynamics_auc'].to_numpy()
+dynamics_trans = df_trans['dynamics_auc'].to_numpy()
+dynamics_sup_hopf = df_sup_hopf['dynamics_auc'].to_numpy()
+dynamics_sub_hopf = df_sub_hopf['dynamics_auc'].to_numpy()
+dynamics_fold_ER = df_fold_ER['dynamics_auc'].to_numpy()
+dynamics_fold_BA = df_fold_BA['dynamics_auc'].to_numpy()
 
-# =========================================================
-# 3. 建图
-# =========================================================
-fig, axes = plt.subplots(2, 3, figsize=(11, 7))
-fig.patch.set_facecolor("white")
+dynamics_rate = df_steady_rate['dynamics_auc'].to_numpy()
 
-# 统一颜色范围
-# vmin = min(np.min(d) for d in data_list)
-# vmax = max(np.max(d) for d in data_list)
-vmin = 0.5
-vmax = 1
+ac_fold = df_fold['ac_auc'].to_numpy()
+ac_trans = df_trans['ac_auc'].to_numpy()
+ac_sup_hopf = df_sup_hopf['ac_auc'].to_numpy()
+ac_sub_hopf = df_sub_hopf['ac_auc'].to_numpy()
+ac_fold_ER = df_fold_ER['ac_auc'].to_numpy()
+ac_fold_BA = df_fold_BA['ac_auc'].to_numpy()
 
-cmap = "cividis"
-# cmap = "Blues"
+dev_fold = df_fold['dev_auc'].to_numpy()
+dev_trans = df_trans['dev_auc'].to_numpy()
+dev_sup_hopf = df_sup_hopf['dev_auc'].to_numpy()
+dev_sub_hopf = df_sub_hopf['dev_auc'].to_numpy()
+dev_fold_ER = df_fold_ER['dev_auc'].to_numpy()
+dev_fold_BA = df_fold_BA['dev_auc'].to_numpy()
 
-for i, ax in enumerate(axes.flat):
-    data = data_list[i]
+dev_rate = df_steady_rate['dev_auc'].to_numpy()
 
-    im = ax.imshow(
-        data,
-        origin="upper",
-        cmap=cmap,
-        vmin=vmin,
-        vmax=vmax,
-        interpolation="nearest",
-        aspect="equal"
-    )
+###################################################
 
-    # 标题
-    ax.set_title(titles[i], fontsize=15, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+ax1.plot(sigma,dynamics_fold,c='crimson',linewidth=5,zorder=3)
+ax1.scatter(sigma,dynamics_fold,c='crimson',marker='o',s=150,zorder=3)
 
-    # =========================
-    # 高亮：最下面一行 / 中间一列 / 交汇格子
-    # =========================
-    nrows, ncols = data.shape
-    bottom_row = nrows - 1
-    middle_col = ncols // 2   # 5列时就是第3列，索引为2
+ax1.plot(sigma,ac_fold,c='darkslateblue',linewidth=5,zorder=2)
+ax1.scatter(sigma,ac_fold,c='darkslateblue',marker='o',s=150,zorder=2)
 
-    # 1) 最下面一行：虚线框
-    rect_bottom = Rectangle(
-        (-0.5, bottom_row - 0.5),   # 左下角
-        ncols,                      # 宽度
-        1,                          # 高度
-        fill=False,
-        edgecolor="black",
-        linewidth=2,
-        linestyle="--",
-        zorder=2,
-        clip_on=False
-    )
-    ax.add_patch(rect_bottom)
+ax1.plot(sigma,dev_fold,c='darkorange',linewidth=5,zorder=1)
+ax1.scatter(sigma,dev_fold,c='darkorange',marker='o',s=150,zorder=1)
 
-    # # 2) 中间那一列：点线框
-    # rect_middle = Rectangle(
-    #     (middle_col - 0.5, -0.5),   # 左下角
-    #     1,                          # 宽度
-    #     nrows,                      # 高度
-    #     fill=False,
-    #     edgecolor="black",
-    #     linewidth=2,
-    #     linestyle=":",
-    #     zorder=2,
-    #     clip_on=False
-    # )
-    # ax.add_patch(rect_middle)
-
-    # 3) 它们交汇的格子：crimson 高亮
-    rect_cross = Rectangle(
-        (middle_col - 0.5, bottom_row - 0.5),
-        1,
-        1,
-        fill=False,              # 不填充
-        edgecolor="crimson",     # 只要 crimson 框
-        linewidth=3,
-        zorder=4,
-        clip_on=False
-    )
-    ax.add_patch(rect_cross)
-
-    # 主刻度位置
-    ax.set_xticks(np.arange(5))
-    ax.set_yticks(np.arange(5))
-
-    # -------------------------
-    # x轴：只在最下面一行显示 ticks 和 labels
-    # -------------------------
-    if i // 3 == 1:
-        ax.set_xticklabels(x_labels, rotation=90)
-        ax.tick_params(
-            axis='x',
-            which='major',
-            bottom=True,
-            top=False,
-            labelbottom=True,
-            length=4
-        )
-    else:
-        ax.set_xticklabels([])
-        ax.tick_params(
-            axis='x',
-            which='major',
-            bottom=False,
-            top=False,
-            labelbottom=False,
-            length=0
-        )
-
-    # -------------------------
-    # y轴：只在最左边一列显示 ticks 和 labels
-    # -------------------------
-    if i % 3 == 0:
-        ax.set_yticklabels(y_labels)
-        ax.tick_params(
-            axis='y',
-            which='major',
-            left=True,
-            right=False,
-            labelleft=True,
-            length=4
-        )
-    else:
-        ax.set_yticklabels([])
-        ax.tick_params(
-            axis='y',
-            which='major',
-            left=False,
-            right=False,
-            labelleft=False,
-            length=0
-        )
-
-    # 画每个格子的边界线
-    ax.set_xticks(np.arange(-0.5, 5, 1), minor=True)
-    ax.set_yticks(np.arange(-0.5, 5, 1), minor=True)
-    ax.grid(
-        which='minor',
-        color='white',
-        linestyle='-',
-        linewidth=0.6,
-        alpha=0.35
-    )
-    ax.tick_params(which='minor', bottom=False, left=False)
-
-    # 边框稍微保留
-    for spine in ax.spines.values():
-        spine.set_linewidth(0.8)
-
-# =========================================================
-# 4. 整体横纵坐标标签
-# =========================================================
-
-fig.supxlabel(
-    r'Ridge regularization parameter $\alpha$',
-    y=0.01,
-    fontsize=24
+ax1.set_xlim(-0.0025,0.055)
+ax1.set_xticks([0.0025, 0.01, 0.02, 0.03, 0.04, 0.05])
+ax1.set_xticklabels(['0.25', '1', '2', '3', '4', '5'])
+ax1.annotate(
+    r'$\times 10^{-2}$',
+    xy=(1, 0), xycoords='axes fraction',
+    xytext=(8, -2), textcoords='offset points',
+    ha='left', va='top',fontsize=18
 )
 
-fig.supylabel(
-    r'Noise amplitude $\sigma$',
-    x=0.01,
-    fontsize=24
+ax1.set_ylim(0.15,1.05)
+ax1.set_yticks([0.2,0.6,1])
+ax1.set_yticklabels(['0.2','0.6','1'])
+
+ax1.tick_params(direction='in', length=10)
+ax1.minorticks_on()
+ax1.tick_params(axis='x', which='minor', bottom=False)
+ax1.tick_params(axis='y', which='minor', direction='in', length=5)
+
+ax1.set_ylabel('AUC', font_y)
+ax1.yaxis.set_label_coords(-0.15, 0.5)
+
+ax1.text(-0.2,1.05,'(a)',ha='left', transform=ax1.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax1.set_title('Intraspecific competition', fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+
+###################################################
+
+ax2.plot(sigma,dynamics_trans,c='crimson',linewidth=5,zorder=3)
+ax2.scatter(sigma,dynamics_trans,c='crimson',marker='o',s=150,zorder=3)
+
+ax2.plot(sigma,ac_trans,c='darkslateblue',linewidth=5,zorder=2)
+ax2.scatter(sigma,ac_trans,c='darkslateblue',marker='o',s=150,zorder=2)
+
+ax2.plot(sigma,dev_trans,c='darkorange',linewidth=5,zorder=1)
+ax2.scatter(sigma,dev_trans,c='darkorange',marker='o',s=150,zorder=1)
+
+ax2.set_xlim(-0.0025,0.055)
+ax2.set_xticks([0.0025, 0.01, 0.02, 0.03, 0.04, 0.05])
+ax2.set_xticklabels(['0.25', '1', '2', '3', '4', '5'])
+ax2.annotate(
+    r'$\times 10^{-2}$',
+    xy=(1, 0), xycoords='axes fraction',
+    xytext=(8, -2), textcoords='offset points',
+    ha='left', va='top',fontsize=18
 )
 
-# =========================================================
-# colorbar
-# =========================================================
-cbar_ax = fig.add_axes([0.88, 0.3, 0.02, 0.5])
+ax2.set_ylim(0.15,1.05)
+ax2.set_yticks([0.2,0.6,1])
+ax2.set_yticklabels(['0.2','0.6','1'])
 
-cbar = fig.colorbar(
-    im,
-    cax=cbar_ax
+ax2.tick_params(direction='in', length=10)
+ax2.minorticks_on()
+ax2.tick_params(axis='x', which='minor', bottom=False)
+ax2.tick_params(axis='y', which='minor', direction='in', length=5)
+
+ax2.text(-0.2,1.05,'(b)',ha='left', transform=ax2.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax2.set_title('Predator-prey (transcritical)', fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+
+###################################################
+
+ax3.plot(sigma,dynamics_sup_hopf,c='crimson',linewidth=5,zorder=3)
+ax3.scatter(sigma,dynamics_sup_hopf,c='crimson',marker='o',s=150,zorder=3)
+
+ax3.plot(sigma,ac_sup_hopf,c='darkslateblue',linewidth=5,zorder=2)
+ax3.scatter(sigma,ac_sup_hopf,c='darkslateblue',marker='o',s=150,zorder=2)
+
+ax3.plot(sigma,dev_sup_hopf,c='darkorange',linewidth=5,zorder=1)
+ax3.scatter(sigma,dev_sup_hopf,c='darkorange',marker='o',s=150,zorder=1)
+
+ax3.set_xlim(-0.0025,0.055)
+ax3.set_xticks([0.0025, 0.01, 0.02, 0.03, 0.04, 0.05])
+ax3.set_xticklabels(['0.25', '1', '2', '3', '4', '5'])
+ax3.annotate(
+    r'$\times 10^{-2}$',
+    xy=(1, 0), xycoords='axes fraction',
+    xytext=(8, -2), textcoords='offset points',
+    ha='left', va='top',fontsize=18
 )
 
-# colorbar 只显示这些刻度
-cbar.set_ticks(np.arange(0.5, 1.01, 0.1))
+ax3.set_ylim(0.15,1.05)
+ax3.set_yticks([0.2,0.6,1])
+ax3.set_yticklabels(['0.2','0.6','1'])
 
-cbar.ax.yaxis.set_major_formatter(
-    FuncFormatter(lambda x, pos: f'{x:.1f}'.rstrip('0').rstrip('.'))
+ax3.tick_params(direction='in', length=10)
+ax3.minorticks_on()
+ax3.tick_params(axis='x', which='minor', bottom=False)
+ax3.tick_params(axis='y', which='minor', direction='in', length=5)
+
+ax3.text(-0.2,1.05,'(c)',ha='left', transform=ax3.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax3.set_title('Predator-prey (Hopf)', fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+
+###################################################
+
+ax4.axis('off')
+
+###################################################
+
+ax5.plot(sigma,dynamics_sub_hopf,c='crimson',linewidth=5,zorder=3)
+ax5.scatter(sigma,dynamics_sub_hopf,c='crimson',marker='o',s=150,zorder=3)
+
+ax5.plot(sigma,ac_sub_hopf,c='darkslateblue',linewidth=5,zorder=2)
+ax5.scatter(sigma,ac_sub_hopf,c='darkslateblue',marker='o',s=150,zorder=2)
+
+ax5.plot(sigma,dev_sub_hopf,c='darkorange',linewidth=5,zorder=1)
+ax5.scatter(sigma,dev_sub_hopf,c='darkorange',marker='o',s=150,zorder=1)
+
+ax5.set_xlim(-0.0025,0.055)
+ax5.set_xticks([0.0025, 0.01, 0.02, 0.03, 0.04, 0.05])
+ax5.set_xticklabels(['0.25', '1', '2', '3', '4', '5'])
+ax5.annotate(
+    r'$\times 10^{-2}$',
+    xy=(1, 0), xycoords='axes fraction',
+    xytext=(8, -2), textcoords='offset points',
+    ha='left', va='top',fontsize=18
 )
 
-# labelpad 控制 AUC 与 colorbar 的距离
-cbar.set_label(
-    'AUC',
-    rotation=90,
-    fontsize=22,
-    labelpad=15,
-    fontfamily='Arial'
+ax5.set_ylim(0.15,1.05)
+ax5.set_yticks([0.2,0.6,1])
+ax5.set_yticklabels(['0.2','0.6','1'])
+
+ax5.tick_params(direction='in', length=10)
+ax5.minorticks_on()
+ax5.tick_params(axis='x', which='minor', bottom=False)
+ax5.tick_params(axis='y', which='minor', direction='in', length=5)
+
+ax5.set_xlabel('Noise amplitude',font_x,labelpad=20)
+ax5.set_ylabel('AUC', font_y)
+ax5.yaxis.set_label_coords(-0.15, 0.5)
+
+ax5.text(-0.2,1.05,'(d)',ha='left', transform=ax5.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax5.set_title('Epidemic', fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+
+###################################################
+
+ax6.plot(sigma,dynamics_fold_ER,c='crimson',linewidth=5,zorder=3)
+ax6.scatter(sigma,dynamics_fold_ER,c='crimson',marker='o',s=150,zorder=3)
+
+ax6.plot(sigma,ac_fold_ER,c='darkslateblue',linewidth=5,zorder=2)
+ax6.scatter(sigma,ac_fold_ER,c='darkslateblue',marker='o',s=150,zorder=2)
+
+ax6.plot(sigma,dev_fold_ER,c='darkorange',linewidth=5,zorder=1)
+ax6.scatter(sigma,dev_fold_ER,c='darkorange',marker='o',s=150,zorder=1)
+
+ax6.set_xlim(-0.0025,0.055)
+ax6.set_xticks([0.0025, 0.01, 0.02, 0.03, 0.04, 0.05])
+ax6.set_xticklabels(['0.25', '1', '2', '3', '4', '5'])
+ax6.annotate(
+    r'$\times 10^{-2}$',
+    xy=(1, 0), xycoords='axes fraction',
+    xytext=(8, -2), textcoords='offset points',
+    ha='left', va='top',fontsize=18
 )
 
-cbar.ax.tick_params(
-    labelsize=15,
-    width=1.0,
-    length=4
+ax6.set_ylim(0.15,1.05)
+ax6.set_yticks([0.2,0.6,1])
+ax6.set_yticklabels(['0.2','0.6','1'])
+
+ax6.tick_params(direction='in', length=10)
+ax6.minorticks_on()
+ax6.tick_params(axis='x', which='minor', bottom=False)
+ax6.tick_params(axis='y', which='minor', direction='in', length=5)
+
+ax6.set_xlabel('Noise amplitude',font_x,labelpad=20)
+
+ax6.text(-0.2,1.05,'(e)',ha='left', transform=ax6.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax6.set_title('Mutualistic network (ER)', fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+
+###################################################
+
+ax7.plot(sigma,dynamics_fold_BA,c='crimson',linewidth=5,zorder=3)
+ax7.scatter(sigma,dynamics_fold_BA,c='crimson',marker='o',s=150,zorder=3)
+
+ax7.plot(sigma,ac_fold_BA,c='darkslateblue',linewidth=5,zorder=2)
+ax7.scatter(sigma,ac_fold_BA,c='darkslateblue',marker='o',s=150,zorder=2)
+
+ax7.plot(sigma,dev_fold_BA,c='darkorange',linewidth=5,zorder=1)
+ax7.scatter(sigma,dev_fold_BA,c='darkorange',marker='o',s=150,zorder=1)
+
+ax7.set_xlim(-0.0025,0.055)
+ax7.set_xticks([0.0025, 0.01, 0.02, 0.03, 0.04, 0.05])
+ax7.set_xticklabels(['0.25', '1', '2', '3', '4', '5'])
+ax7.annotate(
+    r'$\times 10^{-2}$',
+    xy=(1, 0), xycoords='axes fraction',
+    xytext=(8, -2), textcoords='offset points',
+    ha='left', va='top',fontsize=18
 )
 
-cbar.outline.set_linewidth(1.0)
+ax7.set_ylim(0.15,1.05)
+ax7.set_yticks([0.2,0.6,1])
+ax7.set_yticklabels(['0.2','0.6','1'])
 
-# =========================================================
+ax7.tick_params(direction='in', length=10)
+ax7.minorticks_on()
+ax7.tick_params(axis='x', which='minor', bottom=False)
+ax7.tick_params(axis='y', which='minor', direction='in', length=5)
 
-plt.subplots_adjust(
-    left=0.1,
-    right=0.85,
-    top=0.93,
-    bottom=0.18,
-    wspace=0.15,
-    hspace=0.2
+ax7.set_xlabel('Noise amplitude',font_x,labelpad=20)
+
+ax7.text(-0.2,1.05,'(f)',ha='left', transform=ax7.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax7.set_title('Mutualistic network (BA)', fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+
+################################################################################################
+
+ax8.plot(sigma,dynamics_rate,c='crimson',linewidth=4,zorder=3)
+ax8.scatter(sigma,dynamics_rate,c='crimson',marker='o',s=80,zorder=3)
+
+ax8.plot(sigma,dev_rate,c='darkorange',linewidth=4,zorder=1)
+ax8.scatter(sigma,dev_rate,c='darkorange',marker='o',s=80,zorder=1)
+
+ax8.set_xlim(-0.0025,0.055)
+ax8.set_xticks([0.0025, 0.01, 0.02, 0.03, 0.04, 0.05])
+ax8.set_xticklabels(['0.25', '1', '2', '3', '4', '5'])
+ax8.annotate(
+    r'$\times 10^{-2}$',
+    xy=(1, 0), xycoords='axes fraction',
+    xytext=(8, -2), textcoords='offset points',
+    ha='left', va='top',fontsize=18
 )
 
+ax8.set_ylim(0.73,1.02)
+ax8.set_yticks([0.75,1])
+ax8.set_yticklabels(['0.75','1'])
+
+ax8.tick_params(direction='in', length=10)
+ax8.minorticks_on()
+ax8.tick_params(axis='x', which='minor', bottom=False)
+ax8.tick_params(axis='y', which='minor', direction='in', length=5)
+
+ax8.set_xlabel('Noise amplitude', font_x, labelpad=20)
+
+ax8.text(-0.2,1.05,'(g)',ha='left', transform=ax8.transAxes,fontdict={'family':'Arial','size':40,'weight':'normal'})
+ax8.set_title('Classification', fontsize=30, fontweight='normal', fontfamily='DejaVu Sans',fontstyle= 'italic', y=1.02)
+
+################################################################################################
+
+legend_dynamics = mlines.Line2D([], [], color='crimson',linestyle='-',linewidth=5,marker='o',markersize=15)
+legend_ac = mlines.Line2D([], [], color='darkslateblue',linestyle='-',linewidth=5,marker='o',markersize=15)
+legend_dev = mlines.Line2D([], [], color='darkorange',linestyle='-',linewidth=5,marker='o',markersize=15)
+
+fig.legend(handles = [legend_dynamics, legend_ac, legend_dev],
+            labels = ['Dynamics-based EWS','Lag-1 AC','Dynamical eigenvalue'],
+              loc='upper center', bbox_to_anchor=(0.88,0.85), ncol=1, frameon=False, 
+              prop=font_manager.FontProperties(family='Arial', size=35))
+
+plt.subplots_adjust(top=0.95, bottom=0.08, left=0.05, right=0.96, hspace=0.3, wspace=0.3)
 plt.savefig('../figures/SFIG9.pdf',format='pdf')
